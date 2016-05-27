@@ -202,6 +202,7 @@ SUMMARY="${SUMMARY}- CFLAGS:\n\t${EXTRA_CFLAGS}\n"
 # Check if the source files are in the right location
 AC_CONFIG_SRCDIR([src/cc_error.c])
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_LINKS([bin/icon.data:examples/icon.data])
 
 # Display the output summary and show the ccore logo
 AC_CONFIG_COMMANDS([summary], [cat logo.txt ; echo -en "$SUMMARY"], [SUMMARY="$SUMMARY"])

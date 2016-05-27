@@ -9,6 +9,8 @@
 #ifndef __CC_WINDOW_H__
 #define __CC_WINDOW_H__
 
+#include <stdint.h>
+
 enum cc_window_flag {
 	CC_WINDOW_ALWAYS_ON_TOP = 1 << 1,
 	CC_WINDOW_NO_BUTTONS =    1 << 2,
@@ -40,12 +42,11 @@ int cc_set_window_maximized(void);
 int cc_set_window_centered(void);
 
 int cc_set_window_title(const char *title);
-int cc_set_window_icon(unsigned width, unsigned height, const unsigned char *data);
-
+int cc_set_window_icon(unsigned width, unsigned height, const uint32_t *data);
 int cc_set_window_position(int x, int y);
 int cc_set_window_size(unsigned width, unsigned height);
 
-int cc_set_mouse_position(void);
+int cc_set_mouse_position(int x, int y);
 int cc_set_mouse_cursor(enum cc_cursor cursor);
 
 int cc_set_clipboard(const char *data);
@@ -55,9 +56,6 @@ int cc_get_window_x(void);
 int cc_get_window_y(void);
 int cc_get_window_width(void);
 int cc_get_window_height(void);
-
-int cc_get_mouse_x(void);
-int cc_get_mouse_y(void);
 
 const char *cc_get_clipboard(void);
 

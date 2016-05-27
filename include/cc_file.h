@@ -6,14 +6,11 @@
  * this program. If not, see <http:opensource.org/licenses/>.
  */
 
-#ifndef __CCORE_H__
-#define __CCORE_H__
+#ifndef __CC_FILE_H__
+#define __CC_FILE_H__
 
-#include "cc_error.h"
-#include "cc_event.h"
-#include "cc_file.h"
-#include "cc_system.h"
-#include "cc_types.h"
-#include "cc_window.h"
+const char *cc_get_user_dir(void);
+const char *cc_get_data_dir(void);
+const char *cc_get_temp_dir(void);
 
-#endif /* __CCORE_H__ */
+#endif /* __CC_FILE_H__ */

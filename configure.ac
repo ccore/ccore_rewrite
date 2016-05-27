@@ -175,8 +175,8 @@ if test x$have_check != xyes; then
 fi
 
 # Let the user specify what modules they want to include
-AC_ARG_ENABLE([disable-threads], [AS_HELP_STRING([--disable-threads], [compile with file module [default=auto]])], [disable_threads=$enableval],	[disable_threads=auto])
-if test x$disable_threads = xyes; then
+AC_ARG_ENABLE([threads], AS_HELP_STRING([--disable-threads], [compile without multi thread support]))
+if test x$enable_threads = xno; then
 	EXTRA_CPPFLAGS="${EXTRA_CPPFLAGS} -DCC_DISABLE_THREADS"
 	SUMMARY="${SUMMARY}Disabling multi threading\n"
 fi

@@ -15,6 +15,7 @@ void cc_clear_error(void);
 
 /* Common errors */
 void cc_out_of_memory_error(void);
+void cc_no_window_error(void);
 void cc_invalid_parameter_error(const char *param);
 
 #endif /* __CC_ERROR_H__ */

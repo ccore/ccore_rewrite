@@ -9,7 +9,7 @@ pkginclude_HEADERS = include/ccore.h include/cc_error.h include/cc_system.h incl
 noinst_LTLIBRARIES = libcommon.la
 libcommon_la_LDFLAGS = $(EXTRA_LDFLAGS) -no-undefined
 libcommon_la_LIBADD = $(EXTRA_LIBS)
-libcommon_la_SOURCES = src/cc_error.c
+libcommon_la_SOURCES = src/cc_error.c src/cc_event.c
 
 if BUILD_LINUX
 endif

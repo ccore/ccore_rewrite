@@ -15,7 +15,50 @@ enum cc_window_flag {
 	CC_WINDOW_NO_RESIZE =     1 << 3
 };
 
-int cc_new_window(int flags);
-int cc_free_window();
+enum cc_cursor {
+	CC_CURSOR_ARROW = 0,
+	CC_CURSOR_CROSS,
+	CC_CURSOR_BEAM,
+	CC_CURSOR_MOVE,
+	CC_CURSOR_HAND,
+	CC_CURSOR_SIZEH,
+	CC_CURSOR_SIZEV,
+	CC_CURSOR_NO,
+	CC_CURSOR_QUESTION,
+	CC_CURSOR_NONE
+};
+
+int cc_new_window(enum cc_window_flag flags);
+int cc_free_window(void);
+int cc_poll_window(void);
+
+int cc_blink_window(void);
+
+/* Setters */
+int cc_set_window_windowed(void);
+int cc_set_window_maximized(void);
+int cc_set_window_centered(void);
+
+int cc_set_window_title(const char *title);
+int cc_set_window_icon(unsigned width, unsigned height, const unsigned char *data);
+
+int cc_set_window_position(int x, int y);
+int cc_set_window_size(unsigned width, unsigned height);
+
+int cc_set_mouse_position(void);
+int cc_set_mouse_cursor(enum cc_cursor cursor);
+
+int cc_set_clipboard(const char *data);
+
+/* Getters */
+int cc_get_window_x(void);
+int cc_get_window_y(void);
+int cc_get_window_width(void);
+int cc_get_window_height(void);
+
+int cc_get_mouse_x(void);
+int cc_get_mouse_y(void);
+
+const char *cc_get_clipboard(void);
 
 #endif /* __CC_WINDOW_H__ */

@@ -33,7 +33,11 @@ void cc_set_error(const char *format, ...)
 	err->error = 1;
 
 	va_start(args, format);
-	vsnprintf(err->message, CC_ERROR_MAX_STRLEN, format, args);
+	vsprintf(err->message, format, args);
+#ifdef CC_DEBUG
+	vfprintf(stderr, format, args);
+	fprintf(stderr, "\n");
+#endif
 	va_end(args);
 }
 
@@ -62,7 +66,23 @@ void cc_out_of_memory_error(void)
 	err = cc_get_error_local();
 
 	err->error = 2;
-	strcpy(err->message, "Could not allocate more memory!");
+	strcpy(err->message, "Could not allocate more memory");
+#ifdef CC_DEBUG
+	fprintf(stderr, "%s\n", err->message);
+#endif
+}
+
+void cc_no_window_error(void)
+{
+	struct cc_error *err;
+
+	err = cc_get_error_local();
+
+	err->error = 2;
+	strcpy(err->message, "No valid window found");
+#ifdef CC_DEBUG
+	fprintf(stderr, "%s\n", err->message);
+#endif
 }
 
 void cc_invalid_parameter_error(const char *param)
@@ -71,6 +91,9 @@ void cc_invalid_parameter_error(const char *param)
 
 	err = cc_get_error_local();
 
-	err->error = 3;
-	snprintf(err->message, CC_ERROR_MAX_STRLEN, "Parameter %s is not valid!", param);
+	err->error = 2;
+	sprintf(err->message, "Parameter %s is not valid", param);
+#ifdef CC_DEBUG
+	fprintf(stderr, "%s\n", err->message);
+#endif
 }

@@ -1,0 +1,30 @@
+language: c
+compiler:
+  - gcc
+  - clang
+os:
+  - linux
+  
+addons:
+  apt:
+    packages:
+    - libglew-dev
+    - libglu1-mesa-dev
+    - libx11-dev
+    - libxrandr-dev
+    - libxinerama-dev
+    - libxi-dev
+    - libxext-dev
+    - libibus-1.0-dev
+    - libtool
+    - binutils-mingw-w64-x86-64
+    - binutils-mingw-w64-i686
+    - check
+  
+script: 
+  - ./configure --enable-debug && make && make check
+# - ./configure --host=x86_64-w64-mingw32 --enable-debug && make && make check
+#  - ./configure --host=i686-w64-mingw32 --enable-debug && make && make check
+
+after_failure:
+  - cat test-suite.log

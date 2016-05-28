@@ -12,17 +12,17 @@
 static char *_data_dir = NULL;
 #endif
 
-const char *cc_get_user_dir(void)
+const char *cc_get_dir_user(void)
 {
 	return CC_USER_LOCATION;
 }
 
-const char *cc_get_temp_dir(void)
+const char *cc_get_dir_temp(void)
 {
 	return CC_TEMP_LOCATION;
 }
 
-const char *cc_get_data_dir(void)
+const char *cc_get_dir_data(void)
 {
 #ifndef CC_DATA_LOCATION
 	size_t len;

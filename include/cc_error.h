@@ -11,6 +11,7 @@
 
 void cc_set_error(const char *format, ...);
 const char *cc_get_error(void);
+void cc_set_error_handler(void (*handler)(const char*));
 void cc_clear_error(void);
 
 /* Common errors */

@@ -9,8 +9,8 @@
 #ifndef __CC_FILE_H__
 #define __CC_FILE_H__
 
-const char *cc_get_user_dir(void);
-const char *cc_get_data_dir(void);
-const char *cc_get_temp_dir(void);
+const char *cc_get_dir_user(void);
+const char *cc_get_dir_data(void);
+const char *cc_get_dir_temp(void);
 
 #endif /* __CC_FILE_H__ */

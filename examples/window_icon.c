@@ -9,11 +9,7 @@
 #define ICON_HEIGHT 32
 #define ICON_PATH "icon.data"
 
-#define EXIT_ON_ERROR(x) \
-	if(!(x)){ \
-		fprintf(stderr, "Error on line %d:\n\t%s: %s\n", __LINE__, #x, cc_get_error());\
-		return EXIT_FAILURE; \
-	}
+uint32_t *icon;
 
 void error_handler(const char *message)
 {
@@ -21,30 +17,40 @@ void error_handler(const char *message)
 	exit(EXIT_FAILURE);
 }
 
-int main(int argc, char** argv)
+void load_icon()
 {
-	uint32_t *icon;
 	char file_path[256];
 	FILE *icon_file;
 	size_t icon_size;
+
+	icon_size = ICON_WIDTH * ICON_HEIGHT * sizeof(uint32_t);
+	icon = (uint32_t*)malloc(icon_size);
+
+	printf("Reading a %dx%d icon file of %lu bytes\n", ICON_WIDTH, ICON_HEIGHT, icon_size);
+
+	strcpy(file_path, cc_get_dir_data());
+	strcat(file_path, ICON_PATH);
+
+	icon_file = fopen(file_path, "rb");
+	if(!icon_file){
+		fprintf(stderr, "Can't open file \"%s\"\n", file_path);
+		exit(EXIT_FAILURE);
+	}
+	fread(icon, sizeof(uint32_t), icon_size, icon_file);
+	fclose(icon_file);
+}
+
+int main(int argc, char** argv)
+{
 	struct cc_event event;
+
+	load_icon();
 
 	cc_set_error_handler(error_handler);
 
 	cc_new_window(CC_WINDOW_NO_RESIZE);
 
-	icon_size = ICON_WIDTH * ICON_HEIGHT * sizeof(uint32_t);
-	icon = (uint32_t*)malloc(icon_size);
-
-	strcpy(file_path, cc_get_dir_data());
-	strcat(file_path, ICON_PATH);
-	icon_file = fopen(file_path, "rb");
-	if(!icon_file){
-		fprintf(stderr, "Can't open file \"%s\"\n", file_path);
-		return EXIT_FAILURE;
-	}
-	fread(icon, icon_size, 1, icon_file);
-	fclose(icon_file);
+	cc_set_window_title("ccore example: window icon");
 
 	cc_set_window_icon(ICON_WIDTH, ICON_HEIGHT, icon);
 	free(icon);

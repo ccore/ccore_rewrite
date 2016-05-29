@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -14,6 +15,7 @@
 static Window _win;
 static Display *_dpy = NULL;
 static int _screen, _width, _height;
+static int (*_default_error_handler)(Display*, XErrorEvent*);
 
 /* Private functions */
 
@@ -68,6 +70,10 @@ static int cc_set_resizable(int resizable)
 
 	if(resizable){
 		size_hints->flags &= ~(PMinSize | PMaxSize);
+		size_hints->min_width = 0;
+		size_hints->max_width = 0;
+		size_hints->min_height = INT_MAX;
+		size_hints->max_height = INT_MAX;
 	}else{
 		size_hints->flags |= PMinSize | PMaxSize;
 		size_hints->min_width = _width;
@@ -87,7 +93,7 @@ static int cc_set_resizable(int resizable)
 
 int cc_new_window(enum cc_window_flag flags)
 {
-	Atom delete_atom;
+	Atom wm_window_type_atom, wm_window_type_dialog_atom, delete_atom;
 
 	if(_dpy != NULL){
 		cc_set_error("ccore can only create a single window");
@@ -101,7 +107,7 @@ int cc_new_window(enum cc_window_flag flags)
 		_height = 100;
 	}
 
-	XSetErrorHandler(cc_handle_x_error);
+	_default_error_handler = XSetErrorHandler(cc_handle_x_error);
 
 	_dpy = XOpenDisplay(NULL);
 	_screen = DefaultScreen(_dpy);
@@ -110,6 +116,12 @@ int cc_new_window(enum cc_window_flag flags)
 
 	if(flags & CC_WINDOW_NO_RESIZE){
 		cc_set_resizable(0);
+	}
+
+	if(flags & CC_WINDOW_NO_BUTTONS){
+		wm_window_type_atom = XInternAtom(_dpy, "_NET_WM_WINDOW_TYPE", False);
+		wm_window_type_dialog_atom = XInternAtom(_dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
+		XChangeProperty(_dpy, _win, wm_window_type_atom, XA_ATOM, 32, PropModeReplace, (unsigned char*)&wm_window_type_dialog_atom, 1);
 	}
 	
 	XMapWindow(_dpy, _win);
@@ -129,6 +141,8 @@ int cc_new_window(enum cc_window_flag flags)
 
 int cc_free_window(void)
 {
+	XSetErrorHandler(_default_error_handler);
+
 	XUnmapWindow(_dpy, _win);
 	XCloseDisplay(_dpy);
 
@@ -173,8 +187,34 @@ int cc_blink_window(void)
 }
 
 /* Setters */
-int cc_set_window_windowed(void);
-int cc_set_window_maximized(void);
+int cc_set_window_windowed(void)
+{
+	if(!_dpy){
+		cc_no_window_error();
+		return 0;
+	}
+
+	if(!cc_set_window_state("_NET_WM_STATE_FULLSCREEN", False)){
+		return 0;
+	}else if(!cc_set_window_state("_NET_WM_STATE_MAXIMIZED_VERT", False)){
+		return 0;
+	}
+	return cc_set_window_state("_NET_WM_STATE_MAXIMIZED_HORZ", False);
+}
+
+int cc_set_window_maximized(void)
+{
+	if(!_dpy){
+		cc_no_window_error();
+		return 0;
+	}
+
+	if(!cc_set_window_state("_NET_WM_STATE_MAXIMIZED_VERT", True)){
+		return 0;
+	}
+	return cc_set_window_state("_NET_WM_STATE_MAXIMIZED_HORZ", True);
+}
+
 int cc_set_window_centered(void);
 
 int cc_set_window_title(const char *title)
@@ -218,7 +258,7 @@ int cc_set_window_title(const char *title)
 	return 1;
 }
 
-int cc_set_window_icon(unsigned width, unsigned height, const uint32_t *data)
+int cc_set_window_icon(int width, int height, const uint32_t *data)
 {
 	size_t data_len, total_len;
 	uint32_t *data_copy;
@@ -255,7 +295,7 @@ int cc_set_window_icon(unsigned width, unsigned height, const uint32_t *data)
 }
 
 int cc_set_window_position(int x, int y);
-int cc_set_window_size(unsigned width, unsigned height);
+int cc_set_window_size(int width, int height);
 
 int cc_set_mouse_position(int x, int y)
 {

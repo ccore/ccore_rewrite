@@ -42,9 +42,9 @@ int cc_set_window_maximized(void);
 int cc_set_window_centered(void);
 
 int cc_set_window_title(const char *title);
-int cc_set_window_icon(unsigned width, unsigned height, const uint32_t *data);
+int cc_set_window_icon(int width, int height, const uint32_t *data);
 int cc_set_window_position(int x, int y);
-int cc_set_window_size(unsigned width, unsigned height);
+int cc_set_window_size(int width, int height);
 
 int cc_set_mouse_position(int x, int y);
 int cc_set_mouse_cursor(enum cc_cursor cursor);

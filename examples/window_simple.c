@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	cc_free_window();
+	cc_destroy_window();
 
 	return EXIT_SUCCESS;
 }

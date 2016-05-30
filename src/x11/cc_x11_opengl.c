@@ -44,7 +44,7 @@ int cc_bind_opengl_context(void)
 	return 1;
 }
 
-int cc_free_opengl_context(void)
+int cc_destroy_opengl_context(void)
 {
 	Display *dpy;
 

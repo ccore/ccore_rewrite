@@ -10,7 +10,7 @@
 #define __CC_OPENGL_H__
 
 int cc_bind_opengl_context(void);
-int cc_free_opengl_context(void);
+int cc_destroy_opengl_context(void);
 int cc_swap_opengl_buffers(void);
 
 #endif /* __CC_OPENGL_H__ */

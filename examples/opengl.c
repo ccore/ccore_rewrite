@@ -13,10 +13,16 @@
 #include <GL/glext.h>
 #endif
 
+void error_handler(const char *message)
+{
+	fprintf(stderr, "Error: \"%s\"\n", cc_get_error());
+	exit(EXIT_FAILURE);
+}
+
 static const float vertex_data[] = {
 	-1.0f, -1.0f, 0.0f,
-	1.0f, -1.0f, 0.0f,
-	0.0f,  1.0f, 0.0f,
+	 1.0f, -1.0f, 0.0f,
+	 0.0f,  1.0f, 0.0f
 };
 
 static const char *vertex_shader_source =
@@ -30,17 +36,17 @@ static const char *fragment_shader_source =
 "#version 330\n"
 "out vec4 frag_colour;"
 "void main () {"
-"  frag_colour = vec4 (0.5, 0.0, 0.5, 1.0);"
+"  frag_colour = vec4 (1.0, 1.0, 1.0, 1.0);"
 "}";
 
 int main(int argc, char** argv)
 {
 	GLuint vertex_buffer_object, vertex_array_object, vertex_shader, fragment_shader, program;
+	struct cc_event event;
 
-	if(!cc_new_window(0)){
-		fprintf(stderr, "Couldn't create window:\n\t%s\n", cc_get_error());
-		return EXIT_FAILURE;
-	}
+	cc_set_error_handler(error_handler);
+
+	cc_new_window(0);
 
 	cc_set_window_size(400, 200);
 	cc_set_window_title("ccore example: opengl");
@@ -74,19 +80,23 @@ int main(int argc, char** argv)
 	glLinkProgram(program);
 
 	while(cc_poll_window()){
-		cc_clear_event_queue();
+		event = cc_pop_event();
+		if(event.type == CC_EVENT_DRAW){
+			glViewport(0, 0, cc_get_window_width(), cc_get_window_height());
 
-		glClear(GL_COLOR_BUFFER_BIT);
-		glClearColor(0.0, 0.0, 0.0, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT);
+			glClearColor(0.0, 0.0, 0.0, 1.0);
 
-		glUseProgram(program);
-		glBindVertexArray(vertex_array_object);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+			glUseProgram(program);
+			glBindVertexArray(vertex_array_object);
+			glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		cc_swap_opengl_buffers();
+			cc_swap_opengl_buffers();
+		}
 	}
 
-	cc_free_window();
+	cc_destroy_opengl_context();
+	cc_destroy_window();
 
 	return EXIT_SUCCESS;
 }

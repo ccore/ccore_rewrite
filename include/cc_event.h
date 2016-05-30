@@ -14,6 +14,8 @@
 enum cc_event_type {
 	CC_EVENT_SKIP = 0,
 
+	CC_EVENT_DRAW,
+
 	CC_EVENT_QUIT,
 	CC_EVENT_RESIZE,
 

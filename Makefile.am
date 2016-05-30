@@ -16,6 +16,7 @@ if BUILD_LINUX
 libcommon_la_SOURCES += src/linux/cc_linux_file.c
 endif
 if BUILD_X11
+libcommon_la_SOURCES += src/x11/cc_x11_display.c
 libcommon_la_SOURCES += src/x11/cc_x11_opengl.c
 libcommon_la_SOURCES += src/x11/cc_x11_window.c
 endif
@@ -33,7 +34,7 @@ check_ccore_LDADD = @CHECK_LIBS@ libccore.la
 TESTS = check_ccore
 endif
 
-bin_PROGRAMS = bin/window_simple bin/window_icon bin/event bin/opengl
+bin_PROGRAMS = bin/window_simple bin/window_icon bin/event bin/opengl bin/display
 
 bin_window_simple_SOURCES = examples/window_simple.c
 bin_window_simple_LDADD = libcommon.la
@@ -46,3 +47,6 @@ bin_event_LDADD = libcommon.la
 
 bin_opengl_SOURCES = examples/opengl.c
 bin_opengl_LDADD = libcommon.la
+
+bin_display_SOURCES = examples/display.c
+bin_display_LDADD = libcommon.la

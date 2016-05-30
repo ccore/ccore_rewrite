@@ -6,16 +6,9 @@
  * this program. If not, see <http:opensource.org/licenses/>.
  */
 
-#ifndef __CCORE_H__
-#define __CCORE_H__
+#ifndef __CC_DISPLAY_H__
+#define __CC_DISPLAY_H__
 
-#include "cc_display.h"
-#include "cc_error.h"
-#include "cc_event.h"
-#include "cc_file.h"
-#include "cc_opengl.h"
-#include "cc_system.h"
-#include "cc_types.h"
-#include "cc_window.h"
+int cc_get_display_count(void);
 
-#endif /* __CCORE_H__ */
+#endif /* __CC_DISPLAY_H__ */

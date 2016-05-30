@@ -156,11 +156,6 @@ int cc_new_window(enum cc_window_flag flags)
 	if(flags & CC_WINDOW_ALWAYS_ON_TOP){
 		cc_set_window_state("_NET_WM_STATE_ABOVE", True);
 	}
-
-	/* Flush X events */
-	while(XPending(_dpy)){
-		XNextEvent(_dpy, &ev_shill);
-	}
 	
 	cc_clear_event_queue();
 
@@ -170,11 +165,11 @@ int cc_new_window(enum cc_window_flag flags)
 	return 1;
 }
 
-int cc_free_window(void)
+int cc_destroy_window(void)
 {
 	XSetErrorHandler(_default_error_handler);
 
-	XUnmapWindow(_dpy, _win);
+	XDestroyWindow(_dpy, _win);
 	XCloseDisplay(_dpy);
 
 	return 1;
@@ -193,6 +188,9 @@ int cc_poll_window(void)
 
 	XNextEvent(_dpy, &ev);
 	switch(ev.type){
+		case Expose:
+			event.type = CC_EVENT_DRAW;
+			break;
 		case KeyPress:
 			event.type = CC_EVENT_PRESS_KEY;
 			event.data.key_code = XLookupKeysym(&ev.xkey, 0);
@@ -294,6 +292,13 @@ int cc_set_window_maximized(void)
 int cc_set_window_centered(void)
 {
 	//TODO
+	
+	return 1;
+}
+
+int cc_set_window_fullscreen_on_current_screen(void)
+{
+	cc_set_window_state("_NET_WM_STATE_FULLCREEN", False);
 	
 	return 1;
 }
@@ -421,6 +426,7 @@ int cc_set_mouse_position(int x, int y)
 int cc_set_mouse_cursor(enum cc_cursor cursor);
 
 /* Getters */
+
 int cc_get_window_x(void)
 {
 	return _x;

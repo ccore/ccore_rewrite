@@ -48,6 +48,7 @@ int main(int argc, char** argv)
 
 	cc_set_error_handler(error_handler);
 
+	cc_set_window_size(300, 200);
 	cc_new_window(CC_WINDOW_NO_RESIZE);
 
 	cc_set_window_title("ccore example: window icon");

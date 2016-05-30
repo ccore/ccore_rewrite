@@ -9,6 +9,8 @@
 #ifndef __CC_EVENT_H__
 #define __CC_EVENT_H__
 
+#include "cc_types.h"
+
 enum cc_event_type {
 	CC_EVENT_SKIP = 0,
 
@@ -29,10 +31,16 @@ enum cc_event_type {
 
 struct cc_event {
 	int type;
+
+	union {
+		int mouse_button;
+		int mouse_scroll_delta;
+		int key_code;
+	} data;
 };
 
 int cc_push_event(struct cc_event event);
 struct cc_event cc_pop_event(void);
-void cc_clear_events(void);
+void cc_clear_event_queue(void);
 
 #endif /* __CC_EVENT_H__ */

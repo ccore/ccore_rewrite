@@ -1,3 +1,4 @@
+#include "cc_x11_window_c.h"
 #include <cc_window.h>
 
 #include <cc_error.h>
@@ -14,8 +15,24 @@
 
 static Window _win;
 static Display *_dpy = NULL;
-static int _screen, _width, _height;
+static int _attr, _screen, _x, _y, _width, _height, _mouse_x, _mouse_y;
 static int (*_default_error_handler)(Display*, XErrorEvent*);
+
+/* Local getters */
+Window cc_get_x_window(void)
+{
+	return _win;
+}
+
+Display *cc_get_x_display(void)
+{
+	return _dpy;
+}
+
+int cc_get_x_screen(void)
+{
+	return _screen;
+}
 
 /* Private functions */
 
@@ -38,7 +55,7 @@ static int cc_set_window_state(const char *type, int value)
 		cc_no_window_error();
 		return 0;
 	}
-		
+
 	wm_state = XInternAtom(_dpy, "_NET_WM_STATE", 1);
 	new_wm_state = XInternAtom(_dpy, type, 1);
 
@@ -94,6 +111,7 @@ static int cc_set_resizable(int resizable)
 int cc_new_window(enum cc_window_flag flags)
 {
 	Atom wm_window_type_atom, wm_window_type_dialog_atom, delete_atom;
+	XEvent ev_shill;
 
 	if(_dpy != NULL){
 		cc_set_error("ccore can only create a single window");
@@ -106,6 +124,7 @@ int cc_new_window(enum cc_window_flag flags)
 	if(_height == 0){
 		_height = 100;
 	}
+	_attr = 0;
 
 	_default_error_handler = XSetErrorHandler(cc_handle_x_error);
 
@@ -116,14 +135,18 @@ int cc_new_window(enum cc_window_flag flags)
 
 	if(flags & CC_WINDOW_NO_RESIZE){
 		cc_set_resizable(0);
+	}else{
+		_attr |= CC_WINDOW_ATTR_RESIZABLE;
 	}
 
 	if(flags & CC_WINDOW_NO_BUTTONS){
 		wm_window_type_atom = XInternAtom(_dpy, "_NET_WM_WINDOW_TYPE", False);
 		wm_window_type_dialog_atom = XInternAtom(_dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
 		XChangeProperty(_dpy, _win, wm_window_type_atom, XA_ATOM, 32, PropModeReplace, (unsigned char*)&wm_window_type_dialog_atom, 1);
+	}else{
+		_attr |= CC_WINDOW_ATTR_BUTTONS;
 	}
-	
+
 	XMapWindow(_dpy, _win);
 	XStoreName(_dpy, _win, "ccore");
 
@@ -134,7 +157,15 @@ int cc_new_window(enum cc_window_flag flags)
 		cc_set_window_state("_NET_WM_STATE_ABOVE", True);
 	}
 
-	cc_clear_events();
+	/* Flush X events */
+	while(XPending(_dpy)){
+		XNextEvent(_dpy, &ev_shill);
+	}
+	
+	cc_clear_event_queue();
+
+	_x = 0;
+	_y = 0;
 
 	return 1;
 }
@@ -162,6 +193,51 @@ int cc_poll_window(void)
 
 	XNextEvent(_dpy, &ev);
 	switch(ev.type){
+		case KeyPress:
+			event.type = CC_EVENT_PRESS_KEY;
+			event.data.key_code = XLookupKeysym(&ev.xkey, 0);
+			break;
+		case KeyRelease:
+			event.type = CC_EVENT_RELEASE_KEY;
+			event.data.key_code = XLookupKeysym(&ev.xkey, 0);
+			break;
+		case KeymapNotify:
+			XRefreshKeyboardMapping(&ev.xmapping);
+			break;
+		case ButtonPress:
+			if(ev.xbutton.button == 4){
+				event.type = CC_EVENT_SCROLL_MOUSE;
+				event.data.mouse_scroll_delta = 1;
+			}else if(ev.xbutton.button == 5){
+				event.type = CC_EVENT_SCROLL_MOUSE;
+				event.data.mouse_scroll_delta = -1;
+			}else{
+				event.type = CC_EVENT_PRESS_MOUSE;
+				event.data.mouse_button = ev.xbutton.button;
+			}
+			break;
+		case ButtonRelease:
+			if(ev.xbutton.button != 4 && ev.xbutton.button != 5){
+				event.type = CC_EVENT_RELEASE_MOUSE;
+				event.data.mouse_button = ev.xbutton.button;
+			}
+			break;
+		case MotionNotify:
+			if(_mouse_x != ev.xmotion.x || _mouse_y != ev.xmotion.y){
+				event.type = CC_EVENT_MOVE_MOUSE;
+				_mouse_x = ev.xmotion.x;
+				_mouse_y = ev.xmotion.y;
+			}
+			break;
+		case ConfigureNotify:
+			if(_width != ev.xconfigure.width || _height != ev.xconfigure.height){
+				event.type = CC_EVENT_RESIZE;
+				_width = ev.xconfigure.width;
+				_height = ev.xconfigure.height;
+			}
+			_x = ev.xconfigure.x;
+			_y = ev.xconfigure.y;
+			break;
 		case FocusIn:
 			event.type = CC_EVENT_GAIN_FOCUS;
 			break;
@@ -215,7 +291,12 @@ int cc_set_window_maximized(void)
 	return cc_set_window_state("_NET_WM_STATE_MAXIMIZED_HORZ", True);
 }
 
-int cc_set_window_centered(void);
+int cc_set_window_centered(void)
+{
+	//TODO
+	
+	return 1;
+}
 
 int cc_set_window_title(const char *title)
 {
@@ -294,8 +375,36 @@ int cc_set_window_icon(int width, int height, const uint32_t *data)
 	return 1;
 }
 
-int cc_set_window_position(int x, int y);
-int cc_set_window_size(int width, int height);
+int cc_set_window_position(int x, int y)
+{
+	if(!_dpy){
+		cc_no_window_error();
+		return 0;
+	}
+
+	XMoveResizeWindow(_dpy, _win, x, y, _width, _height);
+
+	_x = x;
+	_y = y;
+
+	return 1;
+}
+
+int cc_set_window_size(int width, int height)
+{
+	if(_dpy){
+		if(!(_attr & CC_WINDOW_ATTR_RESIZABLE)){
+			cc_set_error("Can not resize a window where the NO_RESIZE flag has been set, call \"cc_set_window_size\" before \"cc_new_window\" if you want to set the initial size");
+			return 0;
+		}
+		XMoveResizeWindow(_dpy, _win, _x, _y, width, height);
+	}	
+
+	_width = width;
+	_height = height;
+
+	return 1;
+}
 
 int cc_set_mouse_position(int x, int y)
 {
@@ -311,12 +420,33 @@ int cc_set_mouse_position(int x, int y)
 
 int cc_set_mouse_cursor(enum cc_cursor cursor);
 
-int cc_set_clipboard(const char *data);
-
 /* Getters */
-int cc_get_window_x(void);
-int cc_get_window_y(void);
-int cc_get_window_width(void);
-int cc_get_window_height(void);
+int cc_get_window_x(void)
+{
+	return _x;
+}
 
-const char *cc_get_clipboard(void);
+int cc_get_window_y(void)
+{
+	return _y;
+}
+
+int cc_get_window_width(void)
+{
+	return _width;
+}
+
+int cc_get_window_height(void)
+{
+	return _height;
+}
+
+int cc_get_mouse_x(void)
+{
+	return _mouse_x;
+}
+
+int cc_get_mouse_y(void)
+{
+	return _mouse_y;
+}

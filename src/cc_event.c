@@ -51,7 +51,7 @@ struct cc_event cc_pop_event(void)
 #endif
 }
 
-void cc_clear_events(void)
+void cc_clear_event_queue(void)
 {
 #ifdef CC_DISABLE_THREADS
 	_event_stack_pointer = -1;

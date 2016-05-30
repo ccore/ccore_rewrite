@@ -49,14 +49,13 @@ int cc_set_window_size(int width, int height);
 int cc_set_mouse_position(int x, int y);
 int cc_set_mouse_cursor(enum cc_cursor cursor);
 
-int cc_set_clipboard(const char *data);
-
 /* Getters */
 int cc_get_window_x(void);
 int cc_get_window_y(void);
 int cc_get_window_width(void);
 int cc_get_window_height(void);
 
-const char *cc_get_clipboard(void);
+int cc_get_mouse_x(void);
+int cc_get_mouse_y(void);
 
 #endif /* __CC_WINDOW_H__ */

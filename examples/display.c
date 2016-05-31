@@ -159,6 +159,7 @@ void update_display_geom()
 	}
 
 	cc_set_window_size((max_x - min_x) / 5, (max_y - min_y) / 5);
+	cc_set_window_centered();
 
 	scale_x = 1.0f / (max_x - min_x);
 	scale_y = 1.0f / (max_y - min_y);

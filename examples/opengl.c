@@ -13,12 +13,6 @@
 #include <GL/glext.h>
 #endif
 
-void error_handler(const char *message)
-{
-	fprintf(stderr, "Error: \"%s\"\n", cc_get_error());
-	exit(EXIT_FAILURE);
-}
-
 static const float vertex_data[] = {
 	-1.0f, -1.0f, 0.0f,
 	 1.0f, -1.0f, 0.0f,
@@ -38,6 +32,12 @@ static const char *fragment_shader_source =
 "void main () {"
 "  frag_colour = vec4 (1.0, 1.0, 1.0, 1.0);"
 "}";
+
+void error_handler(const char *message)
+{
+	fprintf(stderr, "Error: \"%s\"\n", cc_get_error());
+	exit(EXIT_FAILURE);
+}
 
 int main(int argc, char** argv)
 {

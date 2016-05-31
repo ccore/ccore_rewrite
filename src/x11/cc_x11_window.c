@@ -14,25 +14,9 @@
 #include <X11/extensions/Xrandr.h>
 
 static Window _win;
-static Display *_dpy = NULL;
+static Display *_display = NULL;
 static int _attr, _screen, _x, _y, _width, _height, _mouse_x, _mouse_y;
 static int (*_default_error_handler)(Display*, XErrorEvent*);
-
-/* Local getters */
-Window cc_get_x_window(void)
-{
-	return _win;
-}
-
-Display *cc_get_x_display(void)
-{
-	return _dpy;
-}
-
-int cc_get_x_screen(void)
-{
-	return _screen;
-}
 
 /* Private functions */
 
@@ -40,7 +24,7 @@ static int cc_handle_x_error(Display *display, XErrorEvent *event)
 {
 	char error[256];
 
-	XGetErrorText(_dpy, event->error_code, error, sizeof(error));
+	XGetErrorText(_display, event->error_code, error, sizeof(error));
 	cc_set_error("Internal X11 error: %s", error);
 
 	return 0;
@@ -51,13 +35,13 @@ static int cc_set_window_state(const char *type, int value)
 	Atom wm_state, new_wm_state;
 	XEvent event;
 
-	if(!_dpy){
+	if(!_display){
 		cc_no_window_error();
 		return 0;
 	}
 
-	wm_state = XInternAtom(_dpy, "_NET_WM_STATE", 1);
-	new_wm_state = XInternAtom(_dpy, type, 1);
+	wm_state = XInternAtom(_display, "_NET_WM_STATE", 1);
+	new_wm_state = XInternAtom(_display, type, 1);
 
 	event.type = ClientMessage;
 	event.xclient.window = _win;
@@ -66,7 +50,7 @@ static int cc_set_window_state(const char *type, int value)
 	event.xclient.data.l[0] = value;
 	event.xclient.data.l[1] = new_wm_state;
 
-	XSendEvent(_dpy, DefaultRootWindow(_dpy), 1, SubstructureNotifyMask, &event);
+	XSendEvent(_display, DefaultRootWindow(_display), 1, SubstructureNotifyMask, &event);
 
 	return 1;
 }
@@ -76,14 +60,14 @@ static int cc_set_resizable(int resizable)
 	XSizeHints *size_hints;
 	long flags;
 
-	if(!_dpy){
+	if(!_display){
 		cc_no_window_error();
 		return 0;
 	}
 
 	size_hints = XAllocSizeHints();
 	flags = 0;
-	XGetWMNormalHints(_dpy, _win, size_hints, &flags);
+	XGetWMNormalHints(_display, _win, size_hints, &flags);
 
 	if(resizable){
 		size_hints->flags &= ~(PMinSize | PMaxSize);
@@ -99,11 +83,27 @@ static int cc_set_resizable(int resizable)
 		size_hints->max_height = _height;
 	}
 
-	XSetWMNormalHints(_dpy, _win, size_hints);
+	XSetWMNormalHints(_display, _win, size_hints);
 
 	XFree(size_hints);
 
 	return 1;
+}
+
+/* Local getters */
+Window cc_get_x_window(void)
+{
+	return _win;
+}
+
+Display *cc_get_x_display(void)
+{
+	return _display;
+}
+
+int cc_get_x_screen(void)
+{
+	return _screen;
 }
 
 /* Public functions */
@@ -111,9 +111,8 @@ static int cc_set_resizable(int resizable)
 int cc_new_window(enum cc_window_flag flags)
 {
 	Atom wm_window_type_atom, wm_window_type_dialog_atom, delete_atom;
-	XEvent ev_shill;
 
-	if(_dpy != NULL){
+	if(_display != NULL){
 		cc_set_error("ccore can only create a single window");
 		return 0;
 	}
@@ -128,10 +127,10 @@ int cc_new_window(enum cc_window_flag flags)
 
 	_default_error_handler = XSetErrorHandler(cc_handle_x_error);
 
-	_dpy = XOpenDisplay(NULL);
-	_screen = DefaultScreen(_dpy);
-	_win = XCreateWindow(_dpy, RootWindow(_dpy, _screen), 0, 0, _width, _height, 0, CopyFromParent, InputOutput, CopyFromParent, 0, 0);
-	XSelectInput(_dpy, _win, PropertyChangeMask | ExposureMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | FocusChangeMask);
+	_display = XOpenDisplay(NULL);
+	_screen = DefaultScreen(_display);
+	_win = XCreateWindow(_display, RootWindow(_display, _screen), 0, 0, _width, _height, 0, CopyFromParent, InputOutput, CopyFromParent, 0, 0);
+	XSelectInput(_display, _win, PropertyChangeMask | ExposureMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | FocusChangeMask);
 
 	if(flags & CC_WINDOW_NO_RESIZE){
 		cc_set_resizable(0);
@@ -140,18 +139,18 @@ int cc_new_window(enum cc_window_flag flags)
 	}
 
 	if(flags & CC_WINDOW_NO_BUTTONS){
-		wm_window_type_atom = XInternAtom(_dpy, "_NET_WM_WINDOW_TYPE", False);
-		wm_window_type_dialog_atom = XInternAtom(_dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
-		XChangeProperty(_dpy, _win, wm_window_type_atom, XA_ATOM, 32, PropModeReplace, (unsigned char*)&wm_window_type_dialog_atom, 1);
+		wm_window_type_atom = XInternAtom(_display, "_NET_WM_WINDOW_TYPE", False);
+		wm_window_type_dialog_atom = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
+		XChangeProperty(_display, _win, wm_window_type_atom, XA_ATOM, 32, PropModeReplace, (unsigned char*)&wm_window_type_dialog_atom, 1);
 	}else{
 		_attr |= CC_WINDOW_ATTR_BUTTONS;
 	}
 
-	XMapWindow(_dpy, _win);
-	XStoreName(_dpy, _win, "ccore");
+	XMapWindow(_display, _win);
+	XStoreName(_display, _win, "ccore");
 
-	delete_atom = XInternAtom(_dpy, "WM_DELETE_WINDOW", True);
-	XSetWMProtocols(_dpy, _win, &delete_atom, 1);
+	delete_atom = XInternAtom(_display, "WM_DELETE_WINDOW", True);
+	XSetWMProtocols(_display, _win, &delete_atom, 1);
 
 	if(flags & CC_WINDOW_ALWAYS_ON_TOP){
 		cc_set_window_state("_NET_WM_STATE_ABOVE", True);
@@ -169,8 +168,8 @@ int cc_destroy_window(void)
 {
 	XSetErrorHandler(_default_error_handler);
 
-	XDestroyWindow(_dpy, _win);
-	XCloseDisplay(_dpy);
+	XDestroyWindow(_display, _win);
+	XCloseDisplay(_display);
 
 	return 1;
 }
@@ -182,11 +181,11 @@ int cc_poll_window(void)
 
 	event.type = CC_EVENT_SKIP;
 
-	if(!XPending(_dpy)){
+	if(!XPending(_display)){
 		return 1;
 	}
 
-	XNextEvent(_dpy, &ev);
+	XNextEvent(_display, &ev);
 	switch(ev.type){
 		case Expose:
 			event.type = CC_EVENT_DRAW;
@@ -263,7 +262,7 @@ int cc_blink_window(void)
 /* Setters */
 int cc_set_window_windowed(void)
 {
-	if(!_dpy){
+	if(!_display){
 		cc_no_window_error();
 		return 0;
 	}
@@ -278,7 +277,7 @@ int cc_set_window_windowed(void)
 
 int cc_set_window_maximized(void)
 {
-	if(!_dpy){
+	if(!_display){
 		cc_no_window_error();
 		return 0;
 	}
@@ -291,7 +290,7 @@ int cc_set_window_maximized(void)
 
 int cc_set_window_centered(void)
 {
-	//TODO
+	/*TODO*/
 	
 	return 1;
 }
@@ -313,19 +312,19 @@ int cc_set_window_title(const char *title)
 #endif
 	Atom wm_name_atom, wm_icon_name_atom, utf8_string_atom;
 
-	if(!_dpy){
+	if(!_display){
 		cc_no_window_error();
 		return 0;
 	}
 
-	wm_name_atom = XInternAtom(_dpy, "WM_NAME", True);
-	wm_icon_name_atom = XInternAtom(_dpy, "WM_ICON_NAME", True);
-	utf8_string_atom = XInternAtom(_dpy, "UTF8_STRING", True);
+	wm_name_atom = XInternAtom(_display, "WM_NAME", True);
+	wm_icon_name_atom = XInternAtom(_display, "WM_ICON_NAME", True);
+	utf8_string_atom = XInternAtom(_display, "UTF8_STRING", True);
 
 #ifdef X_HAVE_UTF8_STRING
 	len = strlen(title);
-	XChangeProperty(_dpy, _win, wm_name_atom, utf8_string_atom, 8, PropModeReplace, (unsigned char*)title, len);
-	XChangeProperty(_dpy, _win, wm_icon_name_atom, utf8_string_atom, 8, PropModeReplace, (unsigned char*)title, len);
+	XChangeProperty(_display, _win, wm_name_atom, utf8_string_atom, 8, PropModeReplace, (unsigned char*)title, len);
+	XChangeProperty(_display, _win, wm_icon_name_atom, utf8_string_atom, 8, PropModeReplace, (unsigned char*)title, len);
 #else
 	titleCopy = strdup(title);
 	if(!XStringListToTextProperty(&titleCopy, 1, &titleProperty)) {
@@ -334,10 +333,10 @@ int cc_set_window_title(const char *title)
 	}
 	free(titleCopy);
 
-	XSetTextProperty(_dpy, _win, &titleProperty, _WM_NAME);
-	XSetTextProperty(_dpy, _win, &titleProperty, _WM_ICON_NAME);
-	XSetWMName(_dpy, _win, &titleProperty);
-	XSetWMIconName(_dpy, _win, &titleProperty);
+	XSetTextProperty(_display, _win, &titleProperty, _WM_NAME);
+	XSetTextProperty(_display, _win, &titleProperty, _WM_ICON_NAME);
+	XSetWMName(_display, _win, &titleProperty);
+	XSetWMIconName(_display, _win, &titleProperty);
 	XFree(titleProperty.value);
 #endif
 
@@ -355,7 +354,7 @@ int cc_set_window_icon(int width, int height, const uint32_t *data)
 		return 0;
 	}
 
-	if(!_dpy){
+	if(!_display){
 		cc_no_window_error();
 		return 0;
 	}
@@ -372,8 +371,8 @@ int cc_set_window_icon(int width, int height, const uint32_t *data)
 	data_copy[1] = (uint32_t)height;
 	memcpy(data_copy + 2, data, data_len * sizeof(uint32_t));
 
-	wm_icon_atom = XInternAtom(_dpy, "_NET_WM_ICON", False);
-	XChangeProperty(_dpy, _win, wm_icon_atom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)data_copy, total_len);
+	wm_icon_atom = XInternAtom(_display, "_NET_WM_ICON", False);
+	XChangeProperty(_display, _win, wm_icon_atom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)data_copy, total_len);
 
 	free(data_copy);
 
@@ -382,12 +381,12 @@ int cc_set_window_icon(int width, int height, const uint32_t *data)
 
 int cc_set_window_position(int x, int y)
 {
-	if(!_dpy){
+	if(!_display){
 		cc_no_window_error();
 		return 0;
 	}
 
-	XMoveResizeWindow(_dpy, _win, x, y, _width, _height);
+	XMoveResizeWindow(_display, _win, x, y, _width, _height);
 
 	_x = x;
 	_y = y;
@@ -397,12 +396,12 @@ int cc_set_window_position(int x, int y)
 
 int cc_set_window_size(int width, int height)
 {
-	if(_dpy){
+	if(_display){
 		if(!(_attr & CC_WINDOW_ATTR_RESIZABLE)){
 			cc_set_error("Can not resize a window where the NO_RESIZE flag has been set, call \"cc_set_window_size\" before \"cc_new_window\" if you want to set the initial size");
 			return 0;
 		}
-		XMoveResizeWindow(_dpy, _win, _x, _y, width, height);
+		XMoveResizeWindow(_display, _win, _x, _y, width, height);
 	}	
 
 	_width = width;
@@ -413,12 +412,12 @@ int cc_set_window_size(int width, int height)
 
 int cc_set_mouse_position(int x, int y)
 {
-	if(!_dpy){
+	if(!_display){
 		cc_no_window_error();
 		return 0;
 	}
 
-	XWarpPointer(_dpy, None, _win, 0, 0, 0, 0, x, y);
+	XWarpPointer(_display, None, _win, 0, 0, 0, 0, x, y);
 
 	return 1;
 }

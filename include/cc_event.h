@@ -28,7 +28,9 @@ enum cc_event_type {
 	CC_EVENT_SCROLL_MOUSE,
 
 	CC_EVENT_PRESS_KEY,
-	CC_EVENT_RELEASE_KEY
+	CC_EVENT_RELEASE_KEY,
+
+	CC_EVENT_DISPLAY_CHANGE
 };
 
 struct cc_event {

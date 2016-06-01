@@ -27,5 +27,6 @@ int cc_get_display_info(int display_id, struct cc_display_info *info);
 
 int cc_get_default_resolution_id(int display_id);
 int cc_get_resolution_info(int display_id, int resolution_id, struct cc_resolution_info *info);
+int cc_set_resolution(int display_id, int resolution_id);
 
 #endif /* __CC_DISPLAY_H__ */

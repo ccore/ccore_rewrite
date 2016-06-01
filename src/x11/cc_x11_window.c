@@ -178,7 +178,7 @@ int cc_destroy_window(void)
 int cc_poll_window(void)
 {
 	struct cc_event event;
-	XEvent ev;
+	XEvent ev, next_ev;
 
 	event.type = CC_EVENT_SKIP;
 
@@ -196,6 +196,13 @@ int cc_poll_window(void)
 			event.data.key_code = XLookupKeysym(&ev.xkey, 0);
 			break;
 		case KeyRelease:
+			/* Check for a fake key release which is triggered by auto repeat */
+			if(XEventsQueued(_display, QueuedAfterReading)){
+				XPeekEvent(_display, &next_ev);
+				if(next_ev.type == KeyPress && next_ev.xkey.time == ev.xkey.time && next_ev.xkey.keycode == ev.xkey.keycode){
+					break;
+				}
+			}
 			event.type = CC_EVENT_RELEASE_KEY;
 			event.data.key_code = XLookupKeysym(&ev.xkey, 0);
 			break;

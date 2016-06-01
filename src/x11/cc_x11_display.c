@@ -8,8 +8,6 @@
 #include <string.h>
 #include <dirent.h>
 
-#include <X11/extensions/Xinerama.h>
-
 #include "cc_x11_window_c.h"
 
 static struct cc_display *_displays;
@@ -128,7 +126,7 @@ int cc_initialize_display(void)
 	DIR *dir;
 	struct dirent *dir_entry;
 	char display_name[256];
-	int i, event_base, error_base;
+	int i;
 	Display *display;
 	Window root;
 	XRRScreenResources *resources;
@@ -160,11 +158,6 @@ int cc_initialize_display(void)
 		if(!display){
 			cc_set_error("Can't open display \"%s\"", display_name);
 			continue;
-		}
-
-		if(!XineramaQueryExtension(display, &event_base, &error_base)){
-			cc_set_error("The Xinerama extension is not valid");
-			XCloseDisplay(display);
 		}
 
 		root = RootWindow(display, 0);

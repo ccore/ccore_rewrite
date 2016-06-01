@@ -18,7 +18,7 @@ addons:
     - check
   
 script: 
-  - autoreconf --verbose -- install && ./configure --enable-debug && make && make check
+  - autoreconf --verbose --install && ./configure --enable-debug && make && make check
 # - ./configure --host=x86_64-w64-mingw32 --enable-debug && make && make check
 #  - ./configure --host=i686-w64-mingw32 --enable-debug && make && make check
 

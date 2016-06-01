@@ -12,11 +12,18 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/cursorfont.h>
 #include <X11/extensions/Xrandr.h>
 
 static Window _window;
 static Display *_display = NULL;
 static int _attr, _screen, _x, _y, _width, _height, _mouse_x, _mouse_y;
+
+static XID _cursor;
+static Pixmap _cursor_image;
+static const int _cursor_list[] = {XC_arrow, XC_crosshair, XC_xterm, XC_fleur, XC_hand1, XC_sb_h_double_arrow, XC_sb_v_double_arrow, XC_X_cursor, XC_question_arrow};
+static const char _empty_cursor_data[] = {0, 0, 0, 0, 0, 0, 0, 0};
+
 static int (*_default_error_handler)(Display*, XErrorEvent*);
 
 /* Private functions */
@@ -124,13 +131,16 @@ int cc_new_window(enum cc_window_flag flags)
 	if(_height == 0){
 		_height = 100;
 	}
+
+	_x = 0;
+	_y = 0;
 	_attr = 0;
 
 	_default_error_handler = XSetErrorHandler(cc_handle_x_error);
 
 	_display = XOpenDisplay(NULL);
 	_screen = DefaultScreen(_display);
-	_window = XCreateWindow(_display, RootWindow(_display, _screen), 0, 0, _width, _height, 0, CopyFromParent, InputOutput, CopyFromParent, 0, 0);
+	_window = XCreateWindow(_display, RootWindow(_display, _screen), _x, _y, _width, _height, 0, CopyFromParent, InputOutput, CopyFromParent, 0, 0);
 	XSelectInput(_display, _window, PropertyChangeMask | ExposureMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | FocusChangeMask);
 
 	if(flags & CC_WINDOW_NO_RESIZE){
@@ -159,18 +169,22 @@ int cc_new_window(enum cc_window_flag flags)
 	
 	cc_clear_event_queue();
 
-	_x = 0;
-	_y = 0;
+	_cursor_image = XCreateBitmapFromData(_display, _window, _empty_cursor_data, 8, 8);
 
 	return 1;
 }
 
 int cc_destroy_window(void)
 {
-	XSetErrorHandler(_default_error_handler);
+	if(_cursor != 0){
+		XFreeCursor(_display, _cursor);
+	}
+	XFreePixmap(_display, _cursor_image);
 
 	XDestroyWindow(_display, _window);
 	XCloseDisplay(_display);
+
+	XSetErrorHandler(_default_error_handler);
 
 	return 1;
 }
@@ -452,7 +466,35 @@ int cc_set_mouse_position(int x, int y)
 	return 1;
 }
 
-int cc_set_mouse_cursor(enum cc_cursor cursor);
+int cc_set_mouse_cursor(enum cc_cursor cursor)
+{
+	XColor black;
+
+	if(!_display){
+		cc_no_window_error();
+		return 0;
+	}
+	
+	if(_cursor != 0){
+		XFreeCursor(_display, _cursor);
+	}
+
+	if(cursor == CC_CURSOR_NONE){
+		memset(&black, 0, sizeof(XColor));
+		_cursor = XCreatePixmapCursor(_display, _cursor_image, _cursor_image, &black, &black, 0, 0);
+	}else{
+		_cursor = XCreateFontCursor(_display, _cursor_list[cursor]);
+	}
+
+	if(!_cursor){
+		cc_set_error("Could not create X11 cursor");
+		return 0;
+	}
+
+	XDefineCursor(_display, _window, _cursor);
+
+	return 1;
+}
 
 /* Getters */
 

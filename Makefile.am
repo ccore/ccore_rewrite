@@ -34,7 +34,7 @@ check_ccore_LDADD = @CHECK_LIBS@ libccore.la
 TESTS = check_ccore
 endif
 
-bin_PROGRAMS = bin/window_simple bin/window_icon bin/event bin/opengl bin/display
+bin_PROGRAMS = bin/window_simple bin/window_icon bin/mouse bin/event bin/opengl bin/display
 
 bin_window_simple_SOURCES = examples/window_simple.c
 bin_window_simple_LDADD = libcommon.la
@@ -44,6 +44,9 @@ bin_window_icon_LDADD = libcommon.la
 
 bin_event_SOURCES = examples/event.c
 bin_event_LDADD = libcommon.la
+
+bin_mouse_SOURCES = examples/mouse.c
+bin_mouse_LDADD = libcommon.la
 
 bin_opengl_SOURCES = examples/opengl.c
 bin_opengl_LDADD = libcommon.la

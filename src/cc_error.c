@@ -5,22 +5,14 @@
 #include <stdarg.h>
 #include <string.h>
 
-#ifdef CC_DISABLE_THREADS
 static struct cc_error _global_err;
 static void (*_err_handler)(const char*) = NULL;
-#else
-#error "TODO, implement thread-safe error message pool"
-#endif
 
 /* Private functions */
 
 static struct cc_error *cc_get_error_local(void)
 {
-#ifdef CC_DISABLE_THREADS
 	return &_global_err;
-#else
-#error "TODO, implement thread-safe error message pool"
-#endif
 }
 
 static void cc_set_error_values_v(int type, const char *format, va_list args)

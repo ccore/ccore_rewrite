@@ -9,8 +9,6 @@
 #ifndef __CC_EVENT_H__
 #define __CC_EVENT_H__
 
-#include "cc_types.h"
-
 enum cc_event_type {
 	CC_EVENT_SKIP = 0,
 

@@ -16,7 +16,7 @@
 #include "cc_key.h"
 #include "cc_opengl.h"
 #include "cc_system.h"
-#include "cc_types.h"
+#include "cc_thread.h"
 #include "cc_window.h"
 
 #endif /* __CCORE_H__ */

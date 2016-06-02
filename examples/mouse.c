@@ -28,11 +28,7 @@ int main(int argc, char** argv)
 
 	cc_set_error_handler(error_handler);
 
-	if(!cc_new_window(0)){
-		fprintf(stderr, "Couldn't create window:\n\t%s\n", cc_get_error());
-		return EXIT_FAILURE;
-	}
-
+	cc_new_window(0);
 	cc_set_window_size(200, 200);
 	cc_set_window_title("ccore example: mouse");
 

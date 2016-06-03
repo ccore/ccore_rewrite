@@ -23,7 +23,7 @@ AM_PROG_AR
 
 # Initialize libtool
 LT_INIT()
-AC_ENABLE_STATIC
+#AC_ENABLE_STATIC
 AC_ENABLE_SHARED
 
 # Checks for programs.
@@ -171,13 +171,6 @@ if test x$have_check != xyes; then
 	AC_DEFINE([HAVE_CHECK], [1], [Use check])
 	SUMMARY="${SUMMARY}Not building tests (test/test.c) because the 'check' package could not be found\n"
 	SUMMARY="${SUMMARY}Please install the check package to be able to run the tests\n"
-fi
-
-# Let the user specify what modules they want to include
-AC_ARG_ENABLE([threads], AS_HELP_STRING([--disable-threads], [compile without multi thread support]))
-if test x$enable_threads = xno; then
-	EXTRA_CPPFLAGS="${EXTRA_CPPFLAGS} -DCC_DISABLE_THREADS"
-	SUMMARY="${SUMMARY}Disabling multi threading\n"
 fi
 
 # Check if we want to build ccore with the debug flag

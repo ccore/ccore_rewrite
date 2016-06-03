@@ -3,37 +3,31 @@ AM_CFLAGS = $(EXTRA_CFLAGS)
 AM_CPPFLAGS = $(EXTRA_CPPFLAGS)
 AM_LDFLAGS = $(EXTRA_LIBS) $(EXTRA_LDFLAGS)
 
+CCORE_SHARED = src/cc_error.c
+CCORE_SHARED += src/cc_event.c
+
+if BUILD_LINUX
+CCORE_SHARED += src/linux/cc_linux_file.c
+CCORE_SHARED += src/linux/cc_linux_thread.c
+endif
+if BUILD_X11
+CCORE_SHARED += src/x11/cc_x11_display.c
+CCORE_SHARED += src/x11/cc_x11_opengl.c
+CCORE_SHARED += src/x11/cc_x11_window.c
+endif
+
 pkginclude_HEADERS = include/*.h
 
 # Create a common library so the executables are real executables
 noinst_LTLIBRARIES = libcommon.la
-libcommon_la_LDFLAGS = $(EXTRA_LDFLAGS) -no-undefined
+libcommon_la_LDFLAGS = $(EXTRA_LDFLAGS) -no-undefined -module -avoid-version
 libcommon_la_LIBADD = $(EXTRA_LIBS)
-libcommon_la_SOURCES = src/cc_error.c
-libcommon_la_SOURCES += src/cc_event.c
-
-if BUILD_LINUX
-libcommon_la_SOURCES += src/linux/cc_linux_file.c
-libcommon_la_SOURCES += src/linux/cc_linux_thread.c
-endif
-if BUILD_X11
-libcommon_la_SOURCES += src/x11/cc_x11_display.c
-libcommon_la_SOURCES += src/x11/cc_x11_opengl.c
-libcommon_la_SOURCES += src/x11/cc_x11_window.c
-endif
+libcommon_la_SOURCES = $(CCORE_SHARED)
 
 lib_LTLIBRARIES = libccore.la
-libccore_la_LDFLAGS = $(EXTRA_LDFLAGS) -version-info $(CCORE_VERSION) -no-undefined
+libccore_la_LDFLAGS = $(EXTRA_LDFLAGS) -version-info $(CCORE_VERSION)
 libccore_la_LIBADD = $(EXTRA_LIBS)
-libccore_la_SOURCES = src/cc_error.c
-
-if BUILD_TESTS
-check_PROGRAMS = check_ccore
-check_ccore_SOURCES = test/test.c
-check_ccore_LDADD = @CHECK_LIBS@ libccore.la
-
-TESTS = check_ccore
-endif
+libccore_la_SOURCES = $(CCORE_SHARED)
 
 bin_PROGRAMS = bin/display bin/event bin/mouse bin/opengl bin/thread bin/window_icon bin/window_simple
 

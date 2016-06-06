@@ -204,10 +204,12 @@ int cc_poll_window(void)
 	switch(ev.type){
 		case Expose:
 			event.type = CC_EVENT_DRAW;
+			cc_push_event(event);
 			break;
 		case KeyPress:
 			event.type = CC_EVENT_PRESS_KEY;
 			event.data.key_code = XLookupKeysym(&ev.xkey, 0);
+			cc_push_event(event);
 			break;
 		case KeyRelease:
 			/* Check for a fake key release which is triggered by auto repeat */
@@ -219,6 +221,7 @@ int cc_poll_window(void)
 			}
 			event.type = CC_EVENT_RELEASE_KEY;
 			event.data.key_code = XLookupKeysym(&ev.xkey, 0);
+			cc_push_event(event);
 			break;
 		case KeymapNotify:
 			XRefreshKeyboardMapping(&ev.xmapping);
@@ -234,16 +237,19 @@ int cc_poll_window(void)
 				event.type = CC_EVENT_PRESS_MOUSE;
 				event.data.mouse_button = ev.xbutton.button;
 			}
+			cc_push_event(event);
 			break;
 		case ButtonRelease:
 			if(ev.xbutton.button != 4 && ev.xbutton.button != 5){
 				event.type = CC_EVENT_RELEASE_MOUSE;
 				event.data.mouse_button = ev.xbutton.button;
+				cc_push_event(event);
 			}
 			break;
 		case MotionNotify:
 			if(_mouse_x != ev.xmotion.x || _mouse_y != ev.xmotion.y){
 				event.type = CC_EVENT_MOVE_MOUSE;
+				cc_push_event(event);
 				_mouse_x = ev.xmotion.x;
 				_mouse_y = ev.xmotion.y;
 			}
@@ -251,26 +257,29 @@ int cc_poll_window(void)
 		case ConfigureNotify:
 			if(_width != ev.xconfigure.width || _height != ev.xconfigure.height){
 				event.type = CC_EVENT_RESIZE;
+				cc_push_event(event);
 				_width = ev.xconfigure.width;
 				_height = ev.xconfigure.height;
 			}
-			_x = ev.xconfigure.x;
-			_y = ev.xconfigure.y;
+			if(_x != ev.xconfigure.x || _y != ev.xconfigure.y){
+				event.type = CC_EVENT_MOVE;
+				cc_push_event(event);
+				_x = ev.xconfigure.x;
+				_y = ev.xconfigure.y;
+			}
 			break;
 		case FocusIn:
 			event.type = CC_EVENT_GAIN_FOCUS;
+			cc_push_event(event);
 			break;
 		case FocusOut:
 			event.type = CC_EVENT_LOSE_FOCUS;
+			cc_push_event(event);
 			break;
 		case ClientMessage:
 			event.type = CC_EVENT_QUIT;
 			cc_push_event(event);
 			return 0;
-	}
-
-	if(event.type != CC_EVENT_SKIP){
-		return cc_push_event(event);
 	}
 
 	return 1;

@@ -47,6 +47,7 @@ const char *fragment_shader_source =
 GLuint vertex_array, position_buffer, color_buffer, vertex_shader, fragment_shader, program;
 int display_amount, display_x[MAX_DISPLAYS], display_y[MAX_DISPLAYS], display_width[MAX_DISPLAYS], display_height[MAX_DISPLAYS];
 float display_pos_data[MAX_DISPLAYS * 4];
+double display_scale_x, display_scale_y;
 unsigned char display_color_data[MAX_DISPLAYS * 4];
 
 void error_handler(const char *message)
@@ -100,6 +101,9 @@ void setup_opengl(void)
 	glGenBuffers(1, &color_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
 	glBufferData(GL_ARRAY_BUFFER, MAX_DISPLAYS * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void render_opengl()
@@ -109,20 +113,22 @@ void render_opengl()
 
 	glBindVertexArray(vertex_array);
 	glUseProgram(program);
-	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, display_amount);
+	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, display_amount + 1);
 }
 
 void update_buffers(void)
 {	
+	const int total_amount = display_amount + 1;
+
 	glBindVertexArray(vertex_array);
 
 	glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
 	glBufferData(GL_ARRAY_BUFFER, MAX_DISPLAYS * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, display_amount * 4 * sizeof(GLfloat), display_pos_data);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, total_amount * 4 * sizeof(GLfloat), display_pos_data);
 
 	glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
 	glBufferData(GL_ARRAY_BUFFER, MAX_DISPLAYS * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, display_amount * 4 * sizeof(GLubyte), display_color_data);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, total_amount * 4 * sizeof(GLubyte), display_color_data);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
@@ -139,7 +145,7 @@ void update_buffers(void)
 void update_display_geom()
 {
 	int i, ic, min_x, max_x, min_y, max_y;
-	float scale_x, scale_y, pos_x, pos_y, pos_width, pos_height;
+	float pos_x, pos_y, pos_width, pos_height;
 
 	/* Calculate the maximum span of the screens, so we can scale the OpenGL objects */
 	min_x = min_y = INT_MAX;
@@ -162,8 +168,8 @@ void update_display_geom()
 	cc_set_window_size((max_x - min_x) / 5, (max_y - min_y) / 5);
 	cc_set_window_centered();
 
-	scale_x = 1.0f / (max_x - min_x);
-	scale_y = 1.0f / (max_y - min_y);
+	display_scale_x = 1.0f / (max_x - min_x);
+	display_scale_y = 1.0f / (max_y - min_y);
 
 	printf("id\tx\ty\tw\th\n");
 	for(i = 0; i < display_amount; i++){
@@ -173,10 +179,10 @@ void update_display_geom()
 		pos_width = display_width[i];
 		pos_height = display_height[i];
 
-		display_pos_data[ic + 0] = (pos_x * scale_x) * 2.0f - 1.0f;
-		display_pos_data[ic + 1] = 1.0f - (pos_y * scale_y) * 2.0f;
-		display_pos_data[ic + 2] = (pos_width * scale_x) * 1.98f;
-		display_pos_data[ic + 3] = (pos_height * scale_y) * 1.98f;
+		display_pos_data[ic + 0] = (pos_x * display_scale_x) * 2.0f - 1.0f;
+		display_pos_data[ic + 1] = 1.0f - (pos_y * display_scale_y) * 2.0f;
+		display_pos_data[ic + 2] = (pos_width * display_scale_x) * 1.98f;
+		display_pos_data[ic + 3] = (pos_height * display_scale_y) * 1.98f;
 
 		display_color_data[ic + 0] = 255;
 		display_color_data[ic + 1] = 255;
@@ -186,6 +192,27 @@ void update_display_geom()
 		printf("%d\t%d\t%d\t%d\t%d\n", i, display_x[i], display_y[i], display_width[i], display_height[i]);
 	}
 	putchar('\n');
+}
+
+void update_window_geom()
+{
+	const int index = display_amount * 4;
+	int window_x, window_y, window_width, window_height;
+
+	window_x = cc_get_window_x();
+	window_y = cc_get_window_y();
+	window_width = cc_get_window_width();
+	window_height = cc_get_window_height();
+
+	display_pos_data[index + 0] = (window_x + (window_width >> 1)) * display_scale_x * 2.0f - 1.0f;
+	display_pos_data[index + 1] = 1.0f - (window_y + (window_height >> 1)) * display_scale_y * 2.0f;
+	display_pos_data[index + 2] = window_width * display_scale_x * 2.0f;
+	display_pos_data[index + 3] = window_height * display_scale_y * 2.0f;
+
+	display_color_data[index + 0] = 255;
+	display_color_data[index + 1] = 0;
+	display_color_data[index + 2] = 0;
+	display_color_data[index + 3] = 200;
 }
 
 void update_display_data()
@@ -211,6 +238,7 @@ void update_display_data()
 	}
 
 	update_display_geom();
+	update_window_geom();
 }
 
 int main(int argc, char** argv)
@@ -238,8 +266,10 @@ int main(int argc, char** argv)
 			render_opengl();
 
 			cc_swap_opengl_buffers();
-		}else if(event.type == CC_EVENT_RESIZE){
+		}else if(event.type == CC_EVENT_RESIZE || event.type == CC_EVENT_MOVE){
 			glViewport(0, 0, cc_get_window_width(), cc_get_window_height());
+			update_window_geom();
+			update_buffers();
 		}else if(event.type == CC_EVENT_DISPLAY_CHANGE){
 			update_display_data();
 			update_buffers();

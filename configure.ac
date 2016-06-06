@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
 AC_INIT([ccore], m4_esyscmd_s([cat VERSION]))
+AC_PREREQ([2.53])
 
 # Setup m4 folder for libtool
 AC_CONFIG_MACRO_DIR([m4])

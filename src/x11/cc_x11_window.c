@@ -389,8 +389,8 @@ int cc_set_window_title(const char *title)
 
 int cc_set_window_icon(int width, int height, const uint32_t *data)
 {
-	size_t data_len, total_len;
-	uint32_t *data_copy;
+	size_t data_len, total_len, i;
+	unsigned long *data_copy;
 	Atom wm_icon_atom;
 
 	wm_icon_atom = XInternAtom(_display, "_NET_WM_ICON", False);
@@ -411,15 +411,22 @@ int cc_set_window_icon(int width, int height, const uint32_t *data)
 
 	data_len = width * height;
 	total_len = data_len + 2;
-	data_copy = (uint32_t*)malloc(total_len * sizeof(uint32_t));
+	data_copy = (unsigned long*)malloc(total_len * sizeof(unsigned long));
 	if(!data_copy){
 		cc_out_of_memory_error();
 		return 0;
 	}
 
-	data_copy[0] = (uint32_t)width;
-	data_copy[1] = (uint32_t)height;
-	memcpy(data_copy + 2, data, data_len * sizeof(uint32_t));
+	data_copy[0] = width;
+	data_copy[1] = height;
+	if(sizeof(unsigned long) == sizeof(uint32_t)){
+		memcpy(data_copy + 2, data, data_len * sizeof(unsigned long));
+	}else{
+		for(i = 0; i < data_len; i++){
+			data_copy[i + 2] = data[i];
+		}
+	}
+
 	XChangeProperty(_display, _window, wm_icon_atom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)data_copy, total_len);
 
 	free(data_copy);

@@ -41,15 +41,8 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
 AC_C_CONST
-AC_C_INLINE
-AC_C_VOLATILE
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
 AC_TYPE_SIZE_T
-AC_TYPE_UINT64_T
-AC_TYPE_UINT8_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC

@@ -113,7 +113,8 @@ void render_opengl()
 }
 
 void update_buffers(void)
-{	glBindVertexArray(vertex_array);
+{	
+	glBindVertexArray(vertex_array);
 
 	glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
 	glBufferData(GL_ARRAY_BUFFER, MAX_DISPLAYS * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW);

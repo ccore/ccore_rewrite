@@ -1,12 +1,15 @@
 #include "cc_linux_file_c.h"
 #include <cc_file.h>
 
+#include <cc_error.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <libgen.h>
 #include <limits.h>
 #include <linux/limits.h>
+#include <sys/stat.h>
 
 #ifndef CC_DATA_LOCATION
 static char *_data_dir = NULL;
@@ -42,4 +45,40 @@ const char *cc_get_dir_data(void)
 #else
 	return CC_DATA_LOCATION;
 #endif
+}
+
+unsigned long cc_get_file_size(const char *file)
+{
+	struct stat file_info;
+
+	if(stat(file, &file_info) != 0){
+		cc_set_error("Could not get file information for file %s", file);
+		return 0;
+	}
+
+	return file_info.st_size;
+}
+
+time_t cc_get_file_last_modified(const char *file)
+{
+	struct stat file_info;
+
+	if(stat(file, &file_info) != 0){
+		cc_set_error("Could not get file information for file %s", file);
+		return 0;
+	}
+
+	return file_info.st_mtime;
+}
+
+time_t cc_get_file_last_accessed(const char *file)
+{
+	struct stat file_info;
+
+	if(stat(file, &file_info) != 0){
+		cc_set_error("Could not get file information for file %s", file);
+		return 0;
+	}
+
+	return file_info.st_atime;
 }

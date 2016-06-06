@@ -24,3 +24,6 @@ script:
 
 after_failure:
   - cat test-suite.log
+
+notifications:
+  slack: project-job:u3xf1JQFCp9bL9O2OLG1ZqHt

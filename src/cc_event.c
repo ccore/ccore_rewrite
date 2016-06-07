@@ -24,19 +24,22 @@ int cc_push_event(struct cc_event event)
 	return 1;
 }
 
-struct cc_event cc_pop_event(void)
+int cc_pop_event(struct cc_event *event)
 {
-	struct cc_event event;
+	struct cc_event *stack_event;
 
 	if(_event_stack_pointer == -1){
-		event.type = CC_EVENT_SKIP;
-		return event;
+		event->type = CC_EVENT_SKIP;
+		return 0;
 	}
 
-	event = _event_stack[_event_stack_pointer];
+	stack_event = _event_stack + _event_stack_pointer;
+	event->data = stack_event->data;
+	event->type = stack_event->type;
+
 	_event_stack_pointer--;
 
-	return event;
+	return 1;
 }
 
 void cc_clear_event_queue(void)

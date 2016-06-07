@@ -252,19 +252,20 @@ int main(int argc, char** argv)
 	update_buffers();
 
 	while(cc_poll_window()){
-		event = cc_pop_event();
-		if(event.type == CC_EVENT_DRAW){
-			render_opengl();
+		while(cc_pop_event(&event)){
+			if(event.type == CC_EVENT_DRAW){
+				render_opengl();
 
-			cc_swap_opengl_buffers();
-		}else if(event.type == CC_EVENT_RESIZE || event.type == CC_EVENT_MOVE){
-			update_window_geom();
-			update_buffers();
+				cc_swap_opengl_buffers();
+			}else if(event.type == CC_EVENT_RESIZE || event.type == CC_EVENT_MOVE){
+				update_window_geom();
+				update_buffers();
 
-			glViewport(0, 0, cc_get_window_width(), cc_get_window_height());
-		}else if(event.type == CC_EVENT_DISPLAY_CHANGE){
-			update_display_data();
-			update_buffers();
+				glViewport(0, 0, cc_get_window_width(), cc_get_window_height());
+			}else if(event.type == CC_EVENT_DISPLAY_CHANGE){
+				update_display_data();
+				update_buffers();
+			}
 		}
 	}
 

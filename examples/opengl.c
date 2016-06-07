@@ -80,18 +80,19 @@ int main(int argc, char** argv)
 	glLinkProgram(program);
 
 	while(cc_poll_window()){
-		event = cc_pop_event();
-		if(event.type == CC_EVENT_DRAW){
-			glViewport(0, 0, cc_get_window_width(), cc_get_window_height());
+		while(cc_pop_event(&event)){
+			if(event.type == CC_EVENT_DRAW){
+				glViewport(0, 0, cc_get_window_width(), cc_get_window_height());
 
-			glClear(GL_COLOR_BUFFER_BIT);
-			glClearColor(0.0, 0.0, 0.0, 1.0);
+				glClear(GL_COLOR_BUFFER_BIT);
+				glClearColor(0.0, 0.0, 0.0, 1.0);
 
-			glUseProgram(program);
-			glBindVertexArray(vertex_array_object);
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+				glUseProgram(program);
+				glBindVertexArray(vertex_array_object);
+				glDrawArrays(GL_TRIANGLES, 0, 3);
 
-			cc_swap_opengl_buffers();
+				cc_swap_opengl_buffers();
+			}
 		}
 	}
 

@@ -15,4 +15,6 @@ Window cc_get_x_window(void);
 Display *cc_get_x_display(void);
 int cc_get_x_screen(void);
 
+void cc_set_need_redraw(void);
+
 #endif /* __CC_X11_WINDOW_C_H__ */

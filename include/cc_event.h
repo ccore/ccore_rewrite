@@ -43,7 +43,7 @@ struct cc_event {
 };
 
 int cc_push_event(struct cc_event event);
-struct cc_event cc_pop_event(void);
+int cc_pop_event(struct cc_event *event);
 void cc_clear_event_queue(void);
 
 #endif /* __CC_EVENT_H__ */

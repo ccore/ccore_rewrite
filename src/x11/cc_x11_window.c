@@ -17,7 +17,7 @@
 
 static Window _window;
 static Display *_display = NULL;
-static int _attr, _screen, _x, _y, _width, _height, _mouse_x, _mouse_y;
+static int _attr, _screen, _x, _y, _width, _height, _mouse_x, _mouse_y, _need_redraw;
 
 static XID _cursor;
 static Pixmap _cursor_image;
@@ -98,7 +98,7 @@ static int cc_set_resizable(int resizable)
 	return 1;
 }
 
-/* Local getters */
+/* Local functions */
 Window cc_get_x_window(void)
 {
 	return _window;
@@ -112,6 +112,11 @@ Display *cc_get_x_display(void)
 int cc_get_x_screen(void)
 {
 	return _screen;
+}
+
+void cc_set_need_redraw(void)
+{
+	_need_redraw = 1;
 }
 
 /* Public functions */
@@ -135,6 +140,7 @@ int cc_new_window(enum cc_window_flag flags)
 	_x = 0;
 	_y = 0;
 	_attr = 0;
+	_need_redraw = 1;
 
 	_default_error_handler = XSetErrorHandler(cc_handle_x_error);
 
@@ -194,92 +200,99 @@ int cc_poll_window(void)
 	struct cc_event event;
 	XEvent ev, next_ev;
 
-	event.type = CC_EVENT_SKIP;
+	while(XPending(_display)){
+		XNextEvent(_display, &ev);
+		switch(ev.type){
+			case Expose:
+				_need_redraw = 0;
 
-	if(!XPending(_display)){
-		return 1;
+				event.type = CC_EVENT_DRAW;
+				cc_push_event(event);
+				break;
+			case KeyPress:
+				event.type = CC_EVENT_PRESS_KEY;
+				event.data.key_code = XLookupKeysym(&ev.xkey, 0);
+				cc_push_event(event);
+				break;
+			case KeyRelease:
+				/* Check for a fake key release which is triggered by auto repeat */
+				if(XEventsQueued(_display, QueuedAfterReading)){
+					XPeekEvent(_display, &next_ev);
+					if(next_ev.type == KeyPress && next_ev.xkey.time == ev.xkey.time && next_ev.xkey.keycode == ev.xkey.keycode){
+						break;
+					}
+				}
+				event.type = CC_EVENT_RELEASE_KEY;
+				event.data.key_code = XLookupKeysym(&ev.xkey, 0);
+				cc_push_event(event);
+				break;
+			case KeymapNotify:
+				XRefreshKeyboardMapping(&ev.xmapping);
+				break;
+			case ButtonPress:
+				if(ev.xbutton.button == 4){
+					event.type = CC_EVENT_SCROLL_MOUSE;
+					event.data.mouse_scroll_delta = 1;
+				}else if(ev.xbutton.button == 5){
+					event.type = CC_EVENT_SCROLL_MOUSE;
+					event.data.mouse_scroll_delta = -1;
+				}else{
+					event.type = CC_EVENT_PRESS_MOUSE;
+					event.data.mouse_button = ev.xbutton.button;
+				}
+				cc_push_event(event);
+				break;
+			case ButtonRelease:
+				if(ev.xbutton.button != 4 && ev.xbutton.button != 5){
+					event.type = CC_EVENT_RELEASE_MOUSE;
+					event.data.mouse_button = ev.xbutton.button;
+					cc_push_event(event);
+				}
+				break;
+			case MotionNotify:
+				if(_mouse_x != ev.xmotion.x || _mouse_y != ev.xmotion.y){
+					event.type = CC_EVENT_MOVE_MOUSE;
+					cc_push_event(event);
+					_mouse_x = ev.xmotion.x;
+					_mouse_y = ev.xmotion.y;
+				}
+				break;
+			case ConfigureNotify:
+				if(_width != ev.xconfigure.width || _height != ev.xconfigure.height){
+					event.type = CC_EVENT_RESIZE;
+					cc_push_event(event);
+					_width = ev.xconfigure.width;
+					_height = ev.xconfigure.height;
+				}
+				if(_x != ev.xconfigure.x || _y != ev.xconfigure.y){
+					event.type = CC_EVENT_MOVE;
+					cc_push_event(event);
+					_x = ev.xconfigure.x;
+					_y = ev.xconfigure.y;
+				}
+				break;
+			case FocusIn:
+				event.type = CC_EVENT_GAIN_FOCUS;
+				cc_push_event(event);
+				break;
+			case FocusOut:
+				event.type = CC_EVENT_LOSE_FOCUS;
+				cc_push_event(event);
+				break;
+			case ClientMessage:
+				cc_clear_event_queue();
+
+				event.type = CC_EVENT_QUIT;
+				cc_push_event(event);
+				return 0;
+		}
 	}
 
-	XNextEvent(_display, &ev);
-	switch(ev.type){
-		case Expose:
-			event.type = CC_EVENT_DRAW;
-			cc_push_event(event);
-			break;
-		case KeyPress:
-			event.type = CC_EVENT_PRESS_KEY;
-			event.data.key_code = XLookupKeysym(&ev.xkey, 0);
-			cc_push_event(event);
-			break;
-		case KeyRelease:
-			/* Check for a fake key release which is triggered by auto repeat */
-			if(XEventsQueued(_display, QueuedAfterReading)){
-				XPeekEvent(_display, &next_ev);
-				if(next_ev.type == KeyPress && next_ev.xkey.time == ev.xkey.time && next_ev.xkey.keycode == ev.xkey.keycode){
-					break;
-				}
-			}
-			event.type = CC_EVENT_RELEASE_KEY;
-			event.data.key_code = XLookupKeysym(&ev.xkey, 0);
-			cc_push_event(event);
-			break;
-		case KeymapNotify:
-			XRefreshKeyboardMapping(&ev.xmapping);
-			break;
-		case ButtonPress:
-			if(ev.xbutton.button == 4){
-				event.type = CC_EVENT_SCROLL_MOUSE;
-				event.data.mouse_scroll_delta = 1;
-			}else if(ev.xbutton.button == 5){
-				event.type = CC_EVENT_SCROLL_MOUSE;
-				event.data.mouse_scroll_delta = -1;
-			}else{
-				event.type = CC_EVENT_PRESS_MOUSE;
-				event.data.mouse_button = ev.xbutton.button;
-			}
-			cc_push_event(event);
-			break;
-		case ButtonRelease:
-			if(ev.xbutton.button != 4 && ev.xbutton.button != 5){
-				event.type = CC_EVENT_RELEASE_MOUSE;
-				event.data.mouse_button = ev.xbutton.button;
-				cc_push_event(event);
-			}
-			break;
-		case MotionNotify:
-			if(_mouse_x != ev.xmotion.x || _mouse_y != ev.xmotion.y){
-				event.type = CC_EVENT_MOVE_MOUSE;
-				cc_push_event(event);
-				_mouse_x = ev.xmotion.x;
-				_mouse_y = ev.xmotion.y;
-			}
-			break;
-		case ConfigureNotify:
-			if(_width != ev.xconfigure.width || _height != ev.xconfigure.height){
-				event.type = CC_EVENT_RESIZE;
-				cc_push_event(event);
-				_width = ev.xconfigure.width;
-				_height = ev.xconfigure.height;
-			}
-			if(_x != ev.xconfigure.x || _y != ev.xconfigure.y){
-				event.type = CC_EVENT_MOVE;
-				cc_push_event(event);
-				_x = ev.xconfigure.x;
-				_y = ev.xconfigure.y;
-			}
-			break;
-		case FocusIn:
-			event.type = CC_EVENT_GAIN_FOCUS;
-			cc_push_event(event);
-			break;
-		case FocusOut:
-			event.type = CC_EVENT_LOSE_FOCUS;
-			cc_push_event(event);
-			break;
-		case ClientMessage:
-			event.type = CC_EVENT_QUIT;
-			cc_push_event(event);
-			return 0;
+	if(_need_redraw){
+		_need_redraw = 0;
+
+		event.type = CC_EVENT_DRAW;
+		cc_push_event(event);
 	}
 
 	return 1;

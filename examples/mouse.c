@@ -35,20 +35,21 @@ int main(int argc, char** argv)
 	/* Don't fill the whole output stream with mouse move events */
 	event_time_divisor = 0;
 	while(cc_poll_window()){
-		event = cc_pop_event();
-		switch(event.type){
-			case CC_EVENT_PRESS_MOUSE:
-				printf("Mouse button \"%d\" pressed\n", event.data.mouse_button);
-				break;
-			case CC_EVENT_RELEASE_MOUSE:
-				cycle_cursors();
-				printf("Mouse button \"%d\" released\n", event.data.mouse_button);
-				break;
-			case CC_EVENT_MOVE_MOUSE:
-				if(event_time_divisor++ % 50 == 0){
-					printf("Mouse move to \"%d, %d\"\n", cc_get_mouse_x(), cc_get_mouse_y());
-				}
-				break;
+		while(cc_pop_event(&event)){
+			switch(event.type){
+				case CC_EVENT_PRESS_MOUSE:
+					printf("Mouse button \"%d\" pressed\n", event.data.mouse_button);
+					break;
+				case CC_EVENT_RELEASE_MOUSE:
+					cycle_cursors();
+					printf("Mouse button \"%d\" released\n", event.data.mouse_button);
+					break;
+				case CC_EVENT_MOVE_MOUSE:
+					if(event_time_divisor++ % 50 == 0){
+						printf("Mouse move to \"%d, %d\"\n", cc_get_mouse_x(), cc_get_mouse_y());
+					}
+					break;
+			}
 		}
 	}
 

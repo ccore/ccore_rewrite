@@ -13,11 +13,10 @@ int main(int argc, char** argv)
 	}
 
 	while(cc_poll_window()){
-		event = cc_pop_event();
-		switch(event.type){
-			case CC_EVENT_LOSE_FOCUS:
+		while(cc_pop_event(&event)){
+			if(event.type == CC_EVENT_LOSE_FOCUS){
 				cc_blink_window();
-				break;
+			}
 		}
 	}
 

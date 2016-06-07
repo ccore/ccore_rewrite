@@ -6,18 +6,12 @@
  * this program. If not, see <http:opensource.org/licenses/>.
  */
 
-#ifndef __CCORE_H__
-#define __CCORE_H__
+#ifndef __CC_TIME_H__
+#define __CC_TIME_H__
 
-#include "cc_display.h"
-#include "cc_error.h"
-#include "cc_event.h"
-#include "cc_file.h"
-#include "cc_key.h"
-#include "cc_opengl.h"
 #include "cc_system.h"
-#include "cc_thread.h"
-#include "cc_time.h"
-#include "cc_window.h"
 
-#endif /* __CCORE_H__ */
+unsigned long cc_get_time_nano_seconds(void);
+void cc_sleep_micro_seconds(unsigned long micro_seconds);
+
+#endif /* __CC_TIME_H__ */

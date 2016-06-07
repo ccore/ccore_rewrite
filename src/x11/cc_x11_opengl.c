@@ -64,6 +64,8 @@ int cc_swap_opengl_buffers(void)
 	Display *dpy;
 	Window win;
 
+	glXWaitGL();
+
 	dpy = cc_get_x_display();
 	win = cc_get_x_window();
 	glXSwapBuffers(dpy, win);

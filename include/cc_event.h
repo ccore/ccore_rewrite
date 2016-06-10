@@ -29,21 +29,32 @@ enum cc_event_type {
 	CC_EVENT_PRESS_KEY,
 	CC_EVENT_RELEASE_KEY,
 
-	CC_EVENT_DISPLAY_CHANGE
+	CC_EVENT_DISPLAY_CHANGE,
+
+	CC_EVENT_GAMEPAD_CONNECT,
+	CC_EVENT_GAMEPAD_DISCONNECT,
+	CC_EVENT_GAMEPAD_PRESS_BUTTON,
+	CC_EVENT_GAMEPAD_RELEASE_BUTTON,
+	CC_EVENT_GAMEPAD_MOVE_AXIS
+};
+
+struct cc_gamepad_event_data {
+	short id;
+	unsigned char button, axis;
 };
 
 struct cc_event {
 	int type;
 
 	union {
-		int mouse_button;
-		int mouse_scroll_delta;
-		int key_code;
+		int mouse_button, mouse_scroll_delta, key_code;
+		struct cc_gamepad_event_data gamepad_data;
 	} data;
 };
 
+int cc_poll_events(void);
 int cc_push_event(struct cc_event event);
 int cc_pop_event(struct cc_event *event);
-void cc_clear_event_queue(void);
+int cc_clear_event_queue(void);
 
 #endif /* __CC_EVENT_H__ */

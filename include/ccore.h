@@ -13,6 +13,7 @@
 #include "cc_error.h"
 #include "cc_event.h"
 #include "cc_file.h"
+#include "cc_gamepad.h"
 #include "cc_key.h"
 #include "cc_opengl.h"
 #include "cc_system.h"

@@ -2,15 +2,27 @@
 #include <cc_event.h>
 
 #include <cc_error.h>
+#include <cc_system.h>
+
+#ifdef CC_OS_LINUX
+#include "x11/cc_x11_window_c.h"
+#endif
 
 #include <stdlib.h>
 
 static struct cc_event _event_stack[CC_EVENT_MAX_STACK_SIZE];
 static int _event_stack_pointer;
 
-/* Private functions */
-
 /* Public functions */
+
+int cc_poll_events(void)
+{
+	if(!cc_poll_window()){
+		return 0;
+	}
+
+	return 1;
+}
 
 int cc_push_event(struct cc_event event)
 {
@@ -42,7 +54,9 @@ int cc_pop_event(struct cc_event *event)
 	return 1;
 }
 
-void cc_clear_event_queue(void)
+int cc_clear_event_queue(void)
 {
 	_event_stack_pointer = -1;
+
+	return 1;
 }

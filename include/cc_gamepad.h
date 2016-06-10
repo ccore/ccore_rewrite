@@ -6,12 +6,13 @@
  * this program. If not, see <http:opensource.org/licenses/>.
  */
 
-#ifndef __CC_TIME_H__
-#define __CC_TIME_H__
+#ifndef __CC_GAMEPAD_H__
+#define __CC_GAMEPAD_H__
 
-#include "cc_system.h"
+int cc_initialize_gamepad(void);
+int cc_destroy_gamepad(void);
 
-int cc_get_time_nano_seconds(unsigned long *time);
-int cc_sleep_micro_seconds(unsigned long micro_seconds);
+int cc_get_gamepad_count(int *count);
 
-#endif /* __CC_TIME_H__ */
+
+#endif /* __CC_GAMEPAD_H__ */

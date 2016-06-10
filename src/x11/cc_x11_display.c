@@ -201,9 +201,11 @@ int cc_destroy_display(void)
 
 /* Getters */
 
-int cc_get_display_count(void)
+int cc_get_display_count(int *count)
 {
-	return _amount;
+	*count = _amount;
+
+	return 1;
 }
 
 int cc_get_display_info(int display_id, struct cc_display_info *info)
@@ -224,9 +226,11 @@ int cc_get_display_info(int display_id, struct cc_display_info *info)
 	return 1;
 }
 
-int cc_get_default_resolution_id(int display_id)
+int cc_get_default_resolution_id(int display_id, int *id)
 {
-	return 0;
+	*id = 0;
+
+	return 1;
 }
 
 int cc_get_resolution_info(int display_id, int resolution_id, struct cc_resolution_info *info)

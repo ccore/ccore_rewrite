@@ -22,10 +22,10 @@ struct cc_display_info {
 int cc_initialize_display(void);
 int cc_destroy_display(void);
 
-int cc_get_display_count(void);
+int cc_get_display_count(int *count);
 int cc_get_display_info(int display_id, struct cc_display_info *info);
 
-int cc_get_default_resolution_id(int display_id);
+int cc_get_default_resolution_id(int display_id, int *resolution_id);
 int cc_get_resolution_info(int display_id, int resolution_id, struct cc_resolution_info *info);
 int cc_set_resolution(int display_id, int resolution_id);
 

@@ -2,7 +2,7 @@
 
 #include <cc_error.h>
 
-int cc_new_thread(cc_thread *thread, void *(function)(void*), void *data)
+int cc_new_thread(void *(function)(void*), void *data, cc_thread *thread)
 {
 	if(pthread_create(thread, NULL, function, data)){
 		cc_set_error("Could not create thread");
@@ -37,7 +37,7 @@ int cc_exit_thread(void *data)
 	pthread_exit(data);
 }
 
-int cc_new_mutex(cc_mutex *mutex, int spin_count)
+int cc_new_mutex(int spin_count, cc_mutex *mutex)
 {
 	if(pthread_mutex_init(mutex, NULL)){
 		cc_set_error("Could not create mutex");

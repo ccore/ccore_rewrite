@@ -3,16 +3,20 @@
 #include <unistd.h>
 #include <time.h>
 
-unsigned long cc_get_time_nano_seconds(void)
+int cc_get_time_nano_seconds(unsigned long *nano_seconds)
 {
 	struct timespec time;
 
 	clock_gettime(CLOCK_MONOTONIC, &time);
 
-	return (unsigned long)time.tv_nsec + (unsigned long)(time.tv_sec * (unsigned long)1.0e9);
+	*nano_seconds = (unsigned long)time.tv_nsec + (unsigned long)(time.tv_sec * (unsigned long)1.0e9);
+
+	return 1;
 }
 
-void cc_sleep_micro_seconds(unsigned long micro_seconds)
+int cc_sleep_micro_seconds(unsigned long micro_seconds)
 {
 	usleep(micro_seconds);
+
+	return 1;
 }

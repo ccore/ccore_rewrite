@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
 	for(i = 0; i < 100; i++){
 		integers[i] = i;
-		cc_new_thread(threads + i, thread_function, integers + i);
+		cc_new_thread(thread_function, integers + i, threads + i);
 	}
 
 	for(i = 0; i < 100; i++){

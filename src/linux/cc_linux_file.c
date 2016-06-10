@@ -47,7 +47,7 @@ const char *cc_get_dir_data(void)
 #endif
 }
 
-unsigned long cc_get_file_size(const char *file)
+int cc_get_file_size(const char *file, unsigned long *file_size)
 {
 	struct stat file_info;
 
@@ -56,10 +56,12 @@ unsigned long cc_get_file_size(const char *file)
 		return 0;
 	}
 
-	return file_info.st_size;
+	*file_size = file_info.st_size;
+
+	return 1;
 }
 
-time_t cc_get_file_last_modified(const char *file)
+int cc_get_file_last_modified(const char *file, time_t *time_stamp)
 {
 	struct stat file_info;
 
@@ -68,10 +70,12 @@ time_t cc_get_file_last_modified(const char *file)
 		return 0;
 	}
 
-	return file_info.st_mtime;
+	*time_stamp = file_info.st_mtime;
+	
+	return 1;
 }
 
-time_t cc_get_file_last_accessed(const char *file)
+int cc_get_file_last_accessed(const char *file, time_t *time_stamp)
 {
 	struct stat file_info;
 
@@ -80,5 +84,7 @@ time_t cc_get_file_last_accessed(const char *file)
 		return 0;
 	}
 
-	return file_info.st_atime;
+	*time_stamp = file_info.st_atime;
+
+	return 1;
 }

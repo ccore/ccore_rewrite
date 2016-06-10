@@ -119,86 +119,10 @@ void cc_set_need_redraw(void)
 	_need_redraw = 1;
 }
 
-/* Public functions */
-
-int cc_new_window(enum cc_window_flag flags)
-{
-	Atom wm_window_type_atom, wm_window_type_dialog_atom, delete_atom;
-
-	if(_display != NULL){
-		cc_set_error("ccore can only create a single window");
-		return 0;
-	}
-
-	if(_width == 0){
-		_width = 100;
-	}
-	if(_height == 0){
-		_height = 100;
-	}
-
-	_x = 0;
-	_y = 0;
-	_attr = 0;
-	_need_redraw = 1;
-
-	_default_error_handler = XSetErrorHandler(cc_handle_x_error);
-
-	_display = XOpenDisplay(NULL);
-	_screen = DefaultScreen(_display);
-	_window = XCreateWindow(_display, RootWindow(_display, _screen), _x, _y, _width, _height, 0, CopyFromParent, InputOutput, CopyFromParent, 0, 0);
-	XSelectInput(_display, _window, PropertyChangeMask | ExposureMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | FocusChangeMask);
-
-	if(flags & CC_WINDOW_NO_RESIZE){
-		cc_set_resizable(0);
-	}else{
-		_attr |= CC_WINDOW_ATTR_RESIZABLE;
-	}
-
-	if(flags & CC_WINDOW_NO_BUTTONS){
-		wm_window_type_atom = XInternAtom(_display, "_NET_WM_WINDOW_TYPE", False);
-		wm_window_type_dialog_atom = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
-		XChangeProperty(_display, _window, wm_window_type_atom, XA_ATOM, 32, PropModeReplace, (unsigned char*)&wm_window_type_dialog_atom, 1);
-	}else{
-		_attr |= CC_WINDOW_ATTR_BUTTONS;
-	}
-
-	XMapWindow(_display, _window);
-	XStoreName(_display, _window, "ccore");
-
-	delete_atom = XInternAtom(_display, "WM_DELETE_WINDOW", True);
-	XSetWMProtocols(_display, _window, &delete_atom, 1);
-
-	if(flags & CC_WINDOW_ALWAYS_ON_TOP){
-		cc_set_window_state("_NET_WM_STATE_ABOVE", True);
-	}
-	
-	cc_clear_event_queue();
-
-	_cursor_image = XCreateBitmapFromData(_display, _window, _empty_cursor_data, 8, 8);
-
-	return 1;
-}
-
-int cc_destroy_window(void)
-{
-	if(_cursor != 0){
-		XFreeCursor(_display, _cursor);
-	}
-	XFreePixmap(_display, _cursor_image);
-
-	XDestroyWindow(_display, _window);
-	XCloseDisplay(_display);
-
-	XSetErrorHandler(_default_error_handler);
-
-	return 1;
-}
-
 int cc_poll_window(void)
 {
 	struct cc_event event;
-	XEvent ev, next_ev;
+	XEvent ev /*, next_ev*/;
 
 	while(XPending(_display)){
 		XNextEvent(_display, &ev);
@@ -210,18 +134,20 @@ int cc_poll_window(void)
 				cc_push_event(event);
 				break;
 			case KeyPress:
-				event.type = CC_EVENT_PRESS_KEY;
-				event.data.key_code = XLookupKeysym(&ev.xkey, 0);
-				cc_push_event(event);
-				break;
-			case KeyRelease:
-				/* Check for a fake key release which is triggered by auto repeat */
+				/* Check for a fake key release which is triggered by auto repeat
+				 * TODO add boolean value
 				if(XEventsQueued(_display, QueuedAfterReading)){
 					XPeekEvent(_display, &next_ev);
 					if(next_ev.type == KeyPress && next_ev.xkey.time == ev.xkey.time && next_ev.xkey.keycode == ev.xkey.keycode){
 						break;
 					}
 				}
+				*/
+				event.type = CC_EVENT_PRESS_KEY;
+				event.data.key_code = XLookupKeysym(&ev.xkey, 0);
+				cc_push_event(event);
+				break;
+			case KeyRelease:
 				event.type = CC_EVENT_RELEASE_KEY;
 				event.data.key_code = XLookupKeysym(&ev.xkey, 0);
 				cc_push_event(event);
@@ -298,6 +224,82 @@ int cc_poll_window(void)
 	return 1;
 }
 
+/* Public functions */
+
+int cc_new_window(enum cc_window_flag flags)
+{
+	Atom wm_window_type_atom, wm_window_type_dialog_atom, delete_atom;
+
+	if(_display != NULL){
+		cc_set_error("ccore can only create a single window");
+		return 0;
+	}
+
+	if(_width == 0){
+		_width = 100;
+	}
+	if(_height == 0){
+		_height = 100;
+	}
+
+	_x = 0;
+	_y = 0;
+	_attr = 0;
+	_need_redraw = 1;
+
+	_default_error_handler = XSetErrorHandler(cc_handle_x_error);
+
+	_display = XOpenDisplay(NULL);
+	_screen = DefaultScreen(_display);
+	_window = XCreateWindow(_display, RootWindow(_display, _screen), _x, _y, _width, _height, 0, CopyFromParent, InputOutput, CopyFromParent, 0, 0);
+	XSelectInput(_display, _window, PropertyChangeMask | ExposureMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask | KeyPressMask | KeyReleaseMask | FocusChangeMask);
+
+	if(flags & CC_WINDOW_NO_RESIZE){
+		cc_set_resizable(0);
+	}else{
+		_attr |= CC_WINDOW_ATTR_RESIZABLE;
+	}
+
+	if(flags & CC_WINDOW_NO_BUTTONS){
+		wm_window_type_atom = XInternAtom(_display, "_NET_WM_WINDOW_TYPE", False);
+		wm_window_type_dialog_atom = XInternAtom(_display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
+		XChangeProperty(_display, _window, wm_window_type_atom, XA_ATOM, 32, PropModeReplace, (unsigned char*)&wm_window_type_dialog_atom, 1);
+	}else{
+		_attr |= CC_WINDOW_ATTR_BUTTONS;
+	}
+
+	XMapWindow(_display, _window);
+	XStoreName(_display, _window, "ccore");
+
+	delete_atom = XInternAtom(_display, "WM_DELETE_WINDOW", True);
+	XSetWMProtocols(_display, _window, &delete_atom, 1);
+
+	if(flags & CC_WINDOW_ALWAYS_ON_TOP){
+		cc_set_window_state("_NET_WM_STATE_ABOVE", True);
+	}
+	
+	cc_clear_event_queue();
+
+	_cursor_image = XCreateBitmapFromData(_display, _window, _empty_cursor_data, 8, 8);
+
+	return 1;
+}
+
+int cc_destroy_window(void)
+{
+	if(_cursor != 0){
+		XFreeCursor(_display, _cursor);
+	}
+	XFreePixmap(_display, _cursor_image);
+
+	XDestroyWindow(_display, _window);
+	XCloseDisplay(_display);
+
+	XSetErrorHandler(_default_error_handler);
+
+	return 1;
+}
+
 int cc_blink_window(void)
 {
 	return cc_set_window_state("_NET_WM_STATE_DEMANDS_ATTENTION", True);
@@ -339,14 +341,14 @@ int cc_set_window_centered(void)
 	struct cc_resolution_info resolution;
 
 	/* Find the screen the window is in, this might be improved */
-	display_count = cc_get_display_count();
+	cc_get_display_count(&display_count);
 	for(i = 0; i < display_count; i++){
 		cc_get_display_info(i, &display);
 		if(_x < display.x || _y < display.y){
 			continue;
 		}
 
-		default_resolution = cc_get_default_resolution_id(i);
+		cc_get_default_resolution_id(i, &default_resolution);
 		cc_get_resolution_info(i, default_resolution, &resolution);
 		if(_x > display.x + resolution.width || _y > display.y + resolution.height){
 			continue;
@@ -531,32 +533,26 @@ int cc_set_mouse_cursor(enum cc_cursor cursor)
 
 /* Getters */
 
-int cc_get_window_x(void)
+int cc_get_window_coordinates(int *x, int *y)
 {
-	return _x;
+	*x = _x;
+	*y = _y;
+
+	return 1;
 }
 
-int cc_get_window_y(void)
+int cc_get_window_size(int *width, int *height)
 {
-	return _y;
+	*width = _width;
+	*height = _height;
+
+	return 1;
 }
 
-int cc_get_window_width(void)
+int cc_get_mouse_coordinates(int *x, int *y)
 {
-	return _width;
-}
+	*x = _mouse_x;
+	*y = _mouse_y;
 
-int cc_get_window_height(void)
-{
-	return _height;
-}
-
-int cc_get_mouse_x(void)
-{
-	return _mouse_x;
-}
-
-int cc_get_mouse_y(void)
-{
-	return _mouse_y;
+	return 1;
 }

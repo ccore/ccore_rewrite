@@ -32,7 +32,6 @@ enum cc_cursor {
 
 int cc_new_window(enum cc_window_flag flags);
 int cc_destroy_window(void);
-int cc_poll_window(void);
 
 int cc_blink_window(void);
 
@@ -52,12 +51,9 @@ int cc_set_mouse_position(int x, int y);
 int cc_set_mouse_cursor(enum cc_cursor cursor);
 
 /* Getters */
-int cc_get_window_x(void);
-int cc_get_window_y(void);
-int cc_get_window_width(void);
-int cc_get_window_height(void);
+int cc_get_window_coordinates(int *x, int *y);
+int cc_get_window_size(int *width, int *height);
 
-int cc_get_mouse_x(void);
-int cc_get_mouse_y(void);
+int cc_get_mouse_coordinates(int *x, int *y);
 
 #endif /* __CC_WINDOW_H__ */

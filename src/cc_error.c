@@ -33,24 +33,28 @@ static void cc_set_error_values_v(int type, const char *format, va_list args)
 	}
 }
 
-static void cc_set_error_values(int type, const char *format, ...)
+static int cc_set_error_values(int type, const char *format, ...)
 {
 	va_list args;
 
 	va_start(args, format);
 	cc_set_error_values_v(type, format, args);
 	va_end(args);
+
+	return 1;
 }
 
 /* Public functions */
 
-void cc_set_error(const char *format, ...)
+int cc_set_error(const char *format, ...)
 {
 	va_list args;
 	
 	va_start(args, format);
 	cc_set_error_values_v(1, format, args);
 	va_end(args);
+
+	return 1;
 }
 
 const char *cc_get_error(void)
@@ -66,27 +70,31 @@ const char *cc_get_error(void)
 	return err->message;
 }
 
-void cc_set_error_handler(void (*handler)(const char*))
+int cc_set_error_handler(void (*handler)(const char*))
 {
 	_err_handler = handler;
+
+	return 1;
 }
 
-void cc_clear_error(void)
+int cc_clear_error(void)
 {
 	cc_get_error_local()->error = 0;
+
+	return 1;
 }
 
-void cc_out_of_memory_error(void)
+int cc_out_of_memory_error(void)
 {
-	cc_set_error_values(2, "Could not allocate more memory");
+	return cc_set_error_values(2, "Could not allocate more memory");
 }
 
-void cc_no_window_error(void)
+int cc_no_window_error(void)
 {
-	cc_set_error_values(2, "No valid window is found, make sure \"cc_new_window\" is called before the current function");
+	return cc_set_error_values(2, "No valid window is found, make sure \"cc_new_window\" is called before the current function");
 }
 
-void cc_invalid_parameter_error(const char *param)
+int cc_invalid_parameter_error(const char *param)
 {
-	cc_set_error_values(2, "Parameter(s) \"%s\" is not valid", param);
+	return cc_set_error_values(2, "Parameter(s) \"%s\" is not valid", param);
 }

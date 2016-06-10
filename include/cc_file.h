@@ -15,8 +15,8 @@ const char *cc_get_dir_user(void);
 const char *cc_get_dir_data(void);
 const char *cc_get_dir_temp(void);
 
-unsigned long cc_get_file_size(const char *file);
-time_t cc_get_file_last_modified(const char *file);
-time_t cc_get_file_last_accessed(const char *file);
+int cc_get_file_size(const char *file, unsigned long *file_size);
+int cc_get_file_last_modified(const char *file, time_t *time_stamp);
+int cc_get_file_last_accessed(const char *file, time_t *time_stamp);
 
 #endif /* __CC_FILE_H__ */

@@ -23,7 +23,7 @@ void cycle_cursors(void)
 
 int main(int argc, char** argv)
 {
-	int event_time_divisor;
+	int x, y, event_time_divisor;
 	struct cc_event event;
 
 	cc_set_error_handler(error_handler);
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 
 	/* Don't fill the whole output stream with mouse move events */
 	event_time_divisor = 0;
-	while(cc_poll_window()){
+	while(cc_poll_events()){
 		while(cc_pop_event(&event)){
 			switch(event.type){
 				case CC_EVENT_PRESS_MOUSE:
@@ -46,7 +46,8 @@ int main(int argc, char** argv)
 					break;
 				case CC_EVENT_MOVE_MOUSE:
 					if(event_time_divisor++ % 50 == 0){
-						printf("Mouse move to \"%d, %d\"\n", cc_get_mouse_x(), cc_get_mouse_y());
+						cc_get_mouse_coordinates(&x, &y);
+						printf("Mouse move to \"%d, %d\"\n", x, y);
 					}
 					break;
 			}

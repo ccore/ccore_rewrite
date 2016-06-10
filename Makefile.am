@@ -10,6 +10,7 @@ if BUILD_LINUX
 CCORE_SHARED += src/linux/cc_linux_file.c
 CCORE_SHARED += src/linux/cc_linux_thread.c
 CCORE_SHARED += src/linux/cc_linux_time.c
+CCORE_SHARED += src/linux/cc_linux_gamepad.c
 endif
 if BUILD_X11
 CCORE_SHARED += src/x11/cc_x11_display.c

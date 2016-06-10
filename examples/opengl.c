@@ -41,6 +41,7 @@ void error_handler(const char *message)
 
 int main(int argc, char** argv)
 {
+	int width, height;
 	GLuint vertex_buffer_object, vertex_array_object, vertex_shader, fragment_shader, program;
 	struct cc_event event;
 
@@ -79,10 +80,11 @@ int main(int argc, char** argv)
 	glAttachShader(program, vertex_shader);
 	glLinkProgram(program);
 
-	while(cc_poll_window()){
+	while(cc_poll_events()){
 		while(cc_pop_event(&event)){
 			if(event.type == CC_EVENT_DRAW){
-				glViewport(0, 0, cc_get_window_width(), cc_get_window_height());
+				cc_get_window_size(&width, &height);
+				glViewport(0, 0, width, height);
 
 				glClear(GL_COLOR_BUFFER_BIT);
 				glClearColor(0.0, 0.0, 0.0, 1.0);

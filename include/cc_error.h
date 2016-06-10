@@ -9,14 +9,14 @@
 #ifndef __CC_ERROR_H__
 #define __CC_ERROR_H__
 
-void cc_set_error(const char *format, ...);
+int cc_set_error(const char *format, ...);
 const char *cc_get_error(void);
-void cc_set_error_handler(void (*handler)(const char*));
-void cc_clear_error(void);
+int cc_set_error_handler(void (*handler)(const char*));
+int cc_clear_error(void);
 
 /* Common errors */
-void cc_out_of_memory_error(void);
-void cc_no_window_error(void);
-void cc_invalid_parameter_error(const char *param);
+int cc_out_of_memory_error(void);
+int cc_no_window_error(void);
+int cc_invalid_parameter_error(const char *param);
 
 #endif /* __CC_ERROR_H__ */

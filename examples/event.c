@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv)
 {
-	int max_mouse_move_events;
+	int x, y, max_mouse_move_events;
 	struct cc_event event;
 
 	if(!cc_new_window(0)){
@@ -18,14 +18,15 @@ int main(int argc, char** argv)
 
 	/* Don't fill the whole output stream with mouse move events */
 	max_mouse_move_events = 10;
-	while(cc_poll_window()){
+	while(cc_poll_events()){
 		while(cc_pop_event(&event)){
 			switch(event.type){
 				case CC_EVENT_QUIT:
 					printf("Window exit button pressed\n");
 					break;
 				case CC_EVENT_RESIZE:
-					printf("Window resized to \"%dx%d\"\n", cc_get_window_width(), cc_get_window_height());
+					cc_get_window_size(&x, &y);
+					printf("Window resized to \"%dx%d\"\n", x, y);
 					break;
 				case CC_EVENT_GAIN_FOCUS:
 					printf("Window gained focus\n");
@@ -44,7 +45,8 @@ int main(int argc, char** argv)
 					break;
 				case CC_EVENT_MOVE_MOUSE:
 					if(max_mouse_move_events-- > 0){
-						printf("Mouse move to \"%d, %d\"\n", cc_get_mouse_x(), cc_get_mouse_y());
+						cc_get_mouse_coordinates(&x, &y);
+						printf("Mouse move to \"%d, %d\"\n", x, y);
 					}
 					break;
 				case CC_EVENT_PRESS_KEY:

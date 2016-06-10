@@ -9,10 +9,12 @@
 #ifndef __CC_KEY_H__
 #define __CC_KEY_H__
 
-#ifdef X11
+#include "cc_system.h"
+
+#ifdef CC_OS_LINUX
 #include <X11/keysym.h>
 #define KEYDEF(x11,win) x11
-#elif defined WINDOWS
+#elif defined CC_OS_WIN32
 #include <Windows.h>
 #define KEYDEF(x11,win) win
 #endif

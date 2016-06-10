@@ -27,12 +27,12 @@ typedef pthread_mutex_t cc_mutex;
 
 #endif
 
-int cc_new_thread(cc_thread *thread, void *(function)(void*), void *data);
+int cc_new_thread(void *(function)(void*), void *data, cc_thread *thread);
 int cc_destroy_thread(cc_thread *thread);
 int cc_join_thread(cc_thread *thread);
 int cc_exit_thread(void *data);
 
-int cc_new_mutex(cc_mutex *mutex, int spin_count);
+int cc_new_mutex(int spin_count, cc_mutex *mutex);
 int cc_destroy_mutex(cc_mutex *mutex);
 int cc_lock_mutex(cc_mutex *mutex);
 int cc_unlock_mutex(cc_mutex *mutex);

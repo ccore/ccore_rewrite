@@ -195,10 +195,10 @@ void update_window_geom()
 	const int index = display_amount * 4;
 	int window_x, window_y, window_width, window_height;
 
-	window_width = cc_get_window_width();
-	window_height = cc_get_window_height();
-	window_x = cc_get_window_x() + (window_width >> 1);
-	window_y = cc_get_window_y() + (window_height >> 1);
+	cc_get_window_size(&window_width, &window_height);
+	cc_get_window_coordinates(&window_x, &window_y);
+	window_x += window_width >> 1;
+	window_y += window_height >> 1;
 
 	display_pos_data[index + 0] = (window_x * display_scale_x) * 2.0f - 1.0f;
 	display_pos_data[index + 1] = 1.0f - (window_y * display_scale_y) * 2.0f;
@@ -213,17 +213,18 @@ void update_window_geom()
 
 void update_display_data()
 {
-	int i;
+	int i, resolution_id;
 	struct cc_display_info display_info;
 	struct cc_resolution_info resolution_info;
 
-	display_amount = cc_get_display_count();
+	cc_get_display_count(&display_amount);
 	for(i = 0; i < display_amount; i++){
 		cc_get_display_info(i, &display_info);
 		display_x[i] = display_info.x;
 		display_y[i] = display_info.y;
 
-		cc_get_resolution_info(i, cc_get_default_resolution_id(i), &resolution_info);
+		cc_get_default_resolution_id(i, &resolution_id);
+		cc_get_resolution_info(i, resolution_id, &resolution_info);
 		display_width[i] = resolution_info.width;
 		display_height[i] = resolution_info.height;
 	}
@@ -234,6 +235,7 @@ void update_display_data()
 
 int main(int argc, char** argv)
 {
+	int width, height;
 	struct cc_event event;
 
 	cc_set_error_handler(error_handler);
@@ -251,7 +253,7 @@ int main(int argc, char** argv)
 	update_display_data();
 	update_buffers();
 
-	while(cc_poll_window()){
+	while(cc_poll_events()){
 		while(cc_pop_event(&event)){
 			if(event.type == CC_EVENT_DRAW){
 				render_opengl();
@@ -261,7 +263,8 @@ int main(int argc, char** argv)
 				update_window_geom();
 				update_buffers();
 
-				glViewport(0, 0, cc_get_window_width(), cc_get_window_height());
+				cc_get_window_size(&width, &height);
+				glViewport(0, 0, width, height);
 			}else if(event.type == CC_EVENT_DISPLAY_CHANGE){
 				update_display_data();
 				update_buffers();

@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
 	cc_set_window_title("ccore example: window icon");
 
-	while(cc_poll_window()){
+	while(cc_poll_events()){
 		while(cc_pop_event(&event)){
 			if(event.type == CC_EVENT_LOSE_FOCUS){
 				cc_blink_window();

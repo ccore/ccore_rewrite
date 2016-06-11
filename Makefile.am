@@ -31,13 +31,16 @@ libccore_la_LDFLAGS = $(EXTRA_LDFLAGS) -version-info $(CCORE_VERSION)
 libccore_la_LIBADD = $(EXTRA_LIBS)
 libccore_la_SOURCES = $(CCORE_SHARED)
 
-bin_PROGRAMS = bin/display bin/event bin/mouse bin/opengl bin/thread bin/window_icon bin/window_simple
+bin_PROGRAMS = bin/display bin/event bin/gamepad bin/mouse bin/opengl bin/thread bin/window_icon bin/window_simple
 
 bin_display_SOURCES = examples/display.c
 bin_display_LDADD = libcommon.la
 
 bin_event_SOURCES = examples/event.c
 bin_event_LDADD = libcommon.la
+
+bin_gamepad_SOURCES = examples/gamepad.c
+bin_gamepad_LDADD = libcommon.la
 
 bin_mouse_SOURCES = examples/mouse.c
 bin_mouse_LDADD = libcommon.la

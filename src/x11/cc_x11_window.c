@@ -124,6 +124,10 @@ int cc_poll_window(void)
 	struct cc_event event;
 	XEvent ev /*, next_ev*/;
 
+	if(!_display){
+		return 1;
+	}
+
 	while(XPending(_display)){
 		XNextEvent(_display, &ev);
 		switch(ev.type){

@@ -5,6 +5,7 @@
 #include <cc_system.h>
 
 #ifdef CC_OS_LINUX
+#include "linux/cc_linux_gamepad_c.h"
 #include "x11/cc_x11_window_c.h"
 #endif
 
@@ -18,6 +19,10 @@ static int _event_stack_pointer;
 int cc_poll_events(void)
 {
 	if(!cc_poll_window()){
+		return 0;
+	}
+
+	if(!cc_poll_gamepad()){
 		return 0;
 	}
 

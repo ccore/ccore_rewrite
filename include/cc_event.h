@@ -48,7 +48,7 @@ struct cc_event {
 
 	union {
 		int mouse_button, mouse_scroll_delta, key_code;
-		struct cc_gamepad_event_data gamepad_data;
+		struct cc_gamepad_event_data gamepad;
 	} data;
 };
 

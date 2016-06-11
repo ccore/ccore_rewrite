@@ -13,7 +13,7 @@ uint32_t *icon;
 
 void error_handler(const char *message)
 {
-	fprintf(stderr, "Error: \"%s\"\n", cc_get_error());
+	fprintf(stderr, "Error: \"%s\"\n", message);
 	exit(EXIT_FAILURE);
 }
 

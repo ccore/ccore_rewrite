@@ -6,10 +6,12 @@
  * this program. If not, see <http:opensource.org/licenses/>.
  */
 
-#ifndef __CC_TIME_H__
-#define __CC_TIME_H__
+#ifndef __CC_INFO_H__
+#define __CC_INFO_H__
 
-int cc_get_time_nano_seconds(unsigned long *time);
-int cc_sleep_micro_seconds(unsigned long micro_seconds);
+int cc_get_processor_count(int *count);
+int cc_get_available_ram(unsigned long *ram);
+int cc_get_total_ram(unsigned long *ram);
+int cc_get_max_file_descriptors(int *max);
 
-#endif /* __CC_TIME_H__ */
+#endif /* __CC_INFO_H__ */

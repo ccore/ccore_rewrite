@@ -8,9 +8,10 @@ CCORE_SHARED += src/cc_event.c
 
 if BUILD_LINUX
 CCORE_SHARED += src/linux/cc_linux_file.c
+CCORE_SHARED += src/linux/cc_linux_gamepad.c
+CCORE_SHARED += src/linux/cc_linux_info.c
 CCORE_SHARED += src/linux/cc_linux_thread.c
 CCORE_SHARED += src/linux/cc_linux_time.c
-CCORE_SHARED += src/linux/cc_linux_gamepad.c
 endif
 if BUILD_X11
 CCORE_SHARED += src/x11/cc_x11_display.c
@@ -31,7 +32,7 @@ libccore_la_LDFLAGS = $(EXTRA_LDFLAGS) -version-info $(CCORE_VERSION)
 libccore_la_LIBADD = $(EXTRA_LIBS)
 libccore_la_SOURCES = $(CCORE_SHARED)
 
-bin_PROGRAMS = bin/display bin/event bin/gamepad bin/mouse bin/opengl bin/thread bin/window_icon bin/window_simple
+bin_PROGRAMS = bin/display bin/event bin/gamepad bin/info bin/mouse bin/opengl bin/thread bin/window_icon bin/window_simple
 
 bin_display_SOURCES = examples/display.c
 bin_display_LDADD = libcommon.la
@@ -41,6 +42,9 @@ bin_event_LDADD = libcommon.la
 
 bin_gamepad_SOURCES = examples/gamepad.c
 bin_gamepad_LDADD = libcommon.la
+
+bin_info_SOURCES = examples/info.c
+bin_info_LDADD = libcommon.la
 
 bin_mouse_SOURCES = examples/mouse.c
 bin_mouse_LDADD = libcommon.la

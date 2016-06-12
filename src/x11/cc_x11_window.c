@@ -291,6 +291,8 @@ int cc_new_window(enum cc_window_flag flags)
 
 int cc_destroy_window(void)
 {
+	cc_release_mouse();
+
 	if(_cursor != 0){
 		XFreeCursor(_display, _cursor);
 	}
@@ -307,6 +309,30 @@ int cc_destroy_window(void)
 int cc_blink_window(void)
 {
 	return cc_set_window_state("_NET_WM_STATE_DEMANDS_ATTENTION", True);
+}
+
+int cc_capture_mouse(void)
+{
+	int return_code;
+
+	return_code = XGrabPointer(_display, _window, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask, GrabModeAsync, GrabModeAsync, _window, None, CurrentTime);
+	if(return_code != GrabSuccess){
+		cc_set_error("Could not grab pointer");
+		return 0;
+	}
+
+	XSync(_display, False);
+
+	return 1;
+}
+
+int cc_release_mouse(void)
+{
+	XUngrabPointer(_display, CurrentTime);
+
+	XSync(_display, False);
+
+	return 1;
 }
 
 /* Setters */

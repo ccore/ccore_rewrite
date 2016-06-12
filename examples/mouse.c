@@ -23,7 +23,7 @@ void cycle_cursors(void)
 
 int main(int argc, char** argv)
 {
-	int x, y, event_time_divisor;
+	int loop, x, y, event_time_divisor;
 	struct cc_event event;
 
 	cc_set_error_handler(error_handler);
@@ -32,11 +32,17 @@ int main(int argc, char** argv)
 	cc_set_window_size(200, 200);
 	cc_set_window_title("ccore example: mouse");
 
+	cc_capture_mouse();
+
 	/* Don't fill the whole output stream with mouse move events */
 	event_time_divisor = 0;
-	while(cc_poll_events()){
+	loop = 1;
+	while(cc_poll_events() && loop){
 		while(cc_pop_event(&event)){
 			switch(event.type){
+				case CC_EVENT_PRESS_KEY:
+					loop = 0;
+					break;
 				case CC_EVENT_PRESS_MOUSE:
 					printf("Mouse button \"%d\" pressed\n", event.data.mouse_button);
 					break;

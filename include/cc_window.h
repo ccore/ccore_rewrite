@@ -35,6 +35,9 @@ int cc_destroy_window(void);
 
 int cc_blink_window(void);
 
+int cc_capture_mouse(void);
+int cc_release_mouse(void);
+
 /* Setters */
 int cc_set_window_windowed(void);
 int cc_set_window_maximized(void);

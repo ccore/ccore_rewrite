@@ -42,8 +42,8 @@ int cc_release_mouse(void);
 int cc_set_window_windowed(void);
 int cc_set_window_maximized(void);
 int cc_set_window_centered(void);
-int cc_set_window_fullscreen_on_current_screen(void);
-int cc_set_window_fullscreen_on_multiple_screens(void);
+int cc_set_window_fullscreen_on_screen(int display_id);
+int cc_set_window_fullscreen_on_multiple_screens(int left_display_id, int right_display_id, int top_display_id, int bottom_display_id);
 
 int cc_set_window_title(const char *title);
 int cc_set_window_icon(int width, int height, const uint32_t *data);

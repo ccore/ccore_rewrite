@@ -15,6 +15,8 @@
 #include <X11/cursorfont.h>
 #include <X11/extensions/Xrandr.h>
 
+#include "cc_x11_display_c.h"
+
 static Window _window;
 static Display *_display = NULL;
 static int _attr, _screen, _x, _y, _width, _height, _mouse_x, _mouse_y, _need_redraw;
@@ -393,10 +395,61 @@ int cc_set_window_centered(void)
 	return 0;
 }
 
-int cc_set_window_fullscreen_on_current_screen(void)
+int cc_set_window_fullscreen_on_screen(int display_id)
 {
-	cc_set_window_state("_NET_WM_STATE_FULLCREEN", False);
-	
+	int screen;
+	Atom fullscreen_monitor_atom;
+	XEvent event;
+
+	if(!cc_get_screen_from_display_id(display_id, &screen)){
+		return 0;
+	}
+
+	fullscreen_monitor_atom = XInternAtom(_display, "_NET_WM_FULLSCREEN_MONITORS", False);
+
+	event.type = ClientMessage;
+	event.xclient.window = _window;
+	event.xclient.message_type = fullscreen_monitor_atom;
+	event.xclient.format = 32;
+	event.xclient.data.l[0] = screen;
+	event.xclient.data.l[4] = 1;
+	XSendEvent(_display, DefaultRootWindow(_display), False, SubstructureNotifyMask, &event);
+
+	cc_set_resizable(1);
+	cc_set_window_state("_NET_WM_STATE_FULLCREEN", True);
+
+	return 1;
+}
+
+int cc_set_window_fullscreen_on_multiple_screens(int left_display_id, int right_display_id, int top_display_id, int bottom_display_id)
+{
+	int left_screen, right_screen, top_screen, bottom_screen;
+	Atom fullscreen_monitor_atom;
+	XEvent event;
+
+	if(!cc_get_screen_from_display_id(left_display_id, &left_screen)
+			|| !cc_get_screen_from_display_id(right_display_id, &right_screen)
+			|| !cc_get_screen_from_display_id(top_display_id, &top_screen)
+			|| !cc_get_screen_from_display_id(bottom_display_id, &bottom_screen)){
+		return 0;
+	}
+
+	fullscreen_monitor_atom = XInternAtom(_display, "_NET_WM_FULLSCREEN_MONITORS", False);
+
+	event.type = ClientMessage;
+	event.xclient.window = _window;
+	event.xclient.message_type = fullscreen_monitor_atom;
+	event.xclient.format = 32;
+	event.xclient.data.l[0] = left_screen;
+	event.xclient.data.l[1] = right_screen;
+	event.xclient.data.l[2] = top_screen;
+	event.xclient.data.l[3] = bottom_screen;
+	event.xclient.data.l[4] = 0;
+	XSendEvent(_display, DefaultRootWindow(_display), False, SubstructureNotifyMask, &event);
+
+	cc_set_resizable(1);
+	cc_set_window_state("_NET_WM_STATE_FULLCREEN", True);
+
 	return 1;
 }
 

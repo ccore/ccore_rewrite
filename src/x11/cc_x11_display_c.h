@@ -20,4 +20,6 @@ struct cc_display {
 	RRMode old_mode;
 };
 
+int cc_get_screen_from_display_id(int display_id, int *screen);
+
 #endif /* __CC_X11_DISPLAY_C_H__ */

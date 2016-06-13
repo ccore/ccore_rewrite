@@ -129,6 +129,24 @@ static int cc_populate_display_data(const char *display_name, Display *x_display
 	return 1;
 }
 
+/* Local functions */
+
+int cc_get_screen_from_display_id(int display_id, int *screen)
+{
+	if(_amount == 0){
+		cc_set_error("Display initialization function needs to be called first");
+		return 0;
+	}
+
+	if(display_id > _amount || display_id < 0){
+		cc_invalid_parameter_error("display_id");
+		return 0;
+	}
+	*screen = _displays[display_id].screen;
+
+	return 1;
+}
+
 /* Public functions */
 
 int cc_initialize_display(void)
@@ -198,6 +216,8 @@ int cc_destroy_display(void)
 	/* TODO reset resolutions */
 
 	for(i = 0; i < _amount; i++){
+		cc_set_resolution(i, 0);
+
 		display = _displays + i;
 		free(display->resolutions);
 		free(display->monitor_name);
@@ -214,12 +234,16 @@ int cc_set_resolution(int display_id, int resolution_id)
 {
 	struct cc_display *display;
 	struct cc_resolution *resolution;
-	int min_x, min_y, max_x, max_y;
 	Display *x_display;
 	Window root;
 	XRRScreenResources *resources;
 	XRROutputInfo *output_info;
 	XRRCrtcInfo *crtc_info;
+
+	if(_amount == 0){
+		cc_set_error("Display initialization function needs to be called first");
+		return 0;
+	}
 
 	if(display_id > _amount || display_id < 0){
 		cc_invalid_parameter_error("display_id");

@@ -44,7 +44,7 @@ static int cc_populate_resolution(struct cc_display *display, RRMode mode, XRRMo
 	return 1;
 }
 
-static int cc_populate_display_data(Display *x_display, XRRScreenResources *resources, int output_index)
+static int cc_populate_display_data(const char *display_name, Display *x_display, XRRScreenResources *resources, int output_index)
 {
 	int i, j;
 	struct cc_display *display;
@@ -64,6 +64,7 @@ static int cc_populate_display_data(Display *x_display, XRRScreenResources *reso
 	}
 	display = _displays + _amount - 1;
 
+	display->current_resolution = 0;
 	display->resolution_amount = 0;
 	display->resolutions = (struct cc_resolution*)malloc(sizeof(struct cc_resolution));
 
@@ -79,6 +80,7 @@ static int cc_populate_display_data(Display *x_display, XRRScreenResources *reso
 	}
 
 	if(display->resolution_amount == 0){
+		_amount--;
 		cc_set_error("Could not find resolutions for display \"%s\"", output_info->name);
 		return 0;
 	}
@@ -89,6 +91,14 @@ static int cc_populate_display_data(Display *x_display, XRRScreenResources *reso
 		return 0;
 	}
 	strcpy(display->monitor_name, output_info->name);
+
+	display->display_name = (char*)malloc(strlen(display_name) + 1);
+	if(!display->display_name){
+		cc_out_of_memory_error();
+		free(display->monitor_name);
+		return 0;
+	}
+	strcpy(display->display_name, display_name);
 
 	display->x = -1;
 	display->y = -1;
@@ -113,7 +123,7 @@ static int cc_populate_display_data(Display *x_display, XRRScreenResources *reso
 	display->screen = output_index;
 	display->output = resources->outputs[output_index];
 	display->dpi = ((double)DisplayWidth(x_display, 0) * 25.4) / (double)DisplayWidthMM(x_display, 0);
-	
+
 	XRRFreeOutputInfo(output_info);
 
 	return 1;
@@ -168,7 +178,7 @@ int cc_initialize_display(void)
 		}
 
 		for(i = 0; i < resources->noutput; i++){
-			cc_populate_display_data(display, resources, i);
+			cc_populate_display_data(display_name, display, resources, i);
 		}
 		XRRFreeScreenResources(resources);
 
@@ -191,6 +201,7 @@ int cc_destroy_display(void)
 		display = _displays + i;
 		free(display->resolutions);
 		free(display->monitor_name);
+		free(display->display_name);
 	}
 
 	free(_displays);
@@ -199,10 +210,79 @@ int cc_destroy_display(void)
 	return 0;
 }
 
+int cc_set_resolution(int display_id, int resolution_id)
+{
+	struct cc_display *display;
+	struct cc_resolution *resolution;
+	int min_x, min_y, max_x, max_y;
+	Display *x_display;
+	Window root;
+	XRRScreenResources *resources;
+	XRROutputInfo *output_info;
+	XRRCrtcInfo *crtc_info;
+
+	if(display_id > _amount || display_id < 0){
+		cc_invalid_parameter_error("display_id");
+		return 0;
+	}
+
+	display = _displays + display_id;
+	if(resolution_id > display->resolution_amount || resolution_id < 0){
+		cc_invalid_parameter_error("resolution_id");
+		return 0;
+	}else if(display->current_resolution == resolution_id){
+		return 1;
+	}
+
+	x_display = XOpenDisplay(display->display_name);
+	root = DefaultRootWindow(x_display);
+	XGrabServer(x_display);
+
+	resources = XRRGetScreenResources(x_display, root);
+	output_info = XRRGetOutputInfo(x_display, resources, display->output);
+	if(output_info->connection == RR_Disconnected){
+
+		XRRFreeScreenResources(resources);
+		XRRFreeOutputInfo(output_info);
+
+		XSync(x_display, False);
+		XUngrabServer(x_display);
+		XCloseDisplay(x_display);
+
+		cc_set_error("Display output is disconnected, can't change the resolution");
+		return 0;
+	}
+
+	crtc_info = XRRGetCrtcInfo(x_display, resources, output_info->crtc);
+
+	if(resolution_id == 0){
+		XRRSetCrtcConfig(x_display, resources, output_info->crtc, CurrentTime, crtc_info->x, crtc_info->y, display->old_mode, crtc_info->rotation, &display->output, 1);
+	}else{
+		resolution = display->resolutions + resolution_id;
+
+		XRRSetCrtcConfig(x_display, resources, output_info->crtc, CurrentTime, crtc_info->x, crtc_info->y, resolution->mode, crtc_info->rotation, &display->output, 1);
+	}
+	
+	XRRFreeScreenResources(resources);
+	XRRFreeOutputInfo(output_info);
+	XRRFreeCrtcInfo(crtc_info);
+
+	XSync(x_display, False);
+	XUngrabServer(x_display);
+	XCloseDisplay(x_display);
+
+	return 1;
+}
+
 /* Getters */
 
 int cc_get_display_count(int *count)
 {
+	if(_amount == 0){
+		cc_set_error("Display initialization function needs to be called first");
+		return 0;
+	}
+
 	*count = _amount;
 
 	return 1;
@@ -211,6 +291,11 @@ int cc_get_display_count(int *count)
 int cc_get_display_info(int display_id, struct cc_display_info *info)
 {
 	struct cc_display *display;
+
+	if(_amount == 0){
+		cc_set_error("Display initialization function needs to be called first");
+		return 0;
+	}
 
 	if(display_id > _amount || display_id < 0){
 		cc_invalid_parameter_error("display_id");
@@ -228,6 +313,16 @@ int cc_get_display_info(int display_id, struct cc_display_info *info)
 
 int cc_get_default_resolution_id(int display_id, int *id)
 {
+	if(_amount == 0){
+		cc_set_error("Display initialization function needs to be called first");
+		return 0;
+	}
+
+	if(display_id > _amount || display_id < 0){
+		cc_invalid_parameter_error("display_id");
+		return 0;
+	}
+
 	*id = 0;
 
 	return 1;
@@ -237,6 +332,11 @@ int cc_get_resolution_info(int display_id, int resolution_id, struct cc_resoluti
 {
 	struct cc_display *display;
 	struct cc_resolution *resolution;
+
+	if(_amount == 0){
+		cc_set_error("Display initialization function needs to be called first");
+		return 0;
+	}
 
 	if(display_id > _amount || display_id < 0){
 		cc_invalid_parameter_error("display_id");

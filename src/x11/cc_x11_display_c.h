@@ -12,9 +12,9 @@ struct cc_resolution {
 };
 
 struct cc_display {
-	int x, y, screen, resolution_amount;
+	int x, y, screen, resolution_amount, current_resolution;
 	unsigned short dpi;
-	char *monitor_name;
+	char *monitor_name, *display_name;
 	struct cc_resolution *resolutions;
 	RROutput output;
 	RRMode old_mode;

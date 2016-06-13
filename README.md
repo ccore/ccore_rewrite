@@ -20,8 +20,6 @@ The features of ccore include support for the following:
 - Managing multiple monitors, multi monitor fullscreen
 - Raw input with gamepad support
 - Threading
-- Clipboard cutting/pasting
-- Cross platform implementations for several OS specific functions
 
 ###Use Cases###
 
@@ -29,15 +27,15 @@ The features of ccore include support for the following:
 - Simple OpenGL applications
 - List and configure display modi on different platforms
 
-###Documentation###
-- [How to install](../../wiki/Building-the-ccore-library)
-- [Example code](../../wiki/Examples)
-
 ###Contact###
 
 | | Username | Mail | Talk to me about...|
 | --- | --- | --- | --- |
-|<img src="https://avatars.githubusercontent.com/jobtalle" height="50px" title="Job Talle"/>|  [`@jobtalle`](https://github.com/jobtalle) | jobtalle@ccore.org | Any design decision & Windows related things |
-|<img src="https://avatars.githubusercontent.com/tversteeg" height="50px" title="Thomas Versteeg"/>|  [`@tversteeg`](https://github.com/tversteeg) | tversteeg@ccore.org | Any design decision & Linux related things |
+|<img src="https://avatars.githubusercontent.com/tversteeg" height="50px" title="Thomas Versteeg"/>|  [`@tversteeg`](https://github.com/tversteeg) | tversteeg@ccore.org | Design decisions, Linux & X11 |
+|<img src="https://avatars.githubusercontent.com/jobtalle" height="50px" title="Job Talle"/>|  [`@jobtalle`](https://github.com/jobtalle) | jobtalle@ccore.org | Windows |
 
 Feel free to ask us any questions related to ccore!
+
+###Contributing###
+
+We are very open to all kind of contributions! Just send us an e-mail if you are considering being part of the ccore team, if you want see something wrong, just create a issue. We also welcome fixes in the form of pull-requests.

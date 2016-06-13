@@ -170,7 +170,7 @@ fi
 AC_ARG_ENABLE([debug], [AS_HELP_STRING([--enable-debug], [compile with assertions and other debug options [default=auto]])], [enable_debug=$enableval],	[enable_debug=auto])
 if test x$enable_debug = xyes; then
 	EXTRA_CPPFLAGS="${EXTRA_CPPFLAGS} -DCC_DEBUG"
-	SUMMARY="${SUMMARY}Building the library with assertions and other options (#define _DEBUG)\n"
+	SUMMARY="${SUMMARY}Building the library with debug functionality (#define CC_DEBUG)\n"
 fi
 
 AC_SUBST(EXTRA_LDFLAGS)

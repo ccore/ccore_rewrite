@@ -38,4 +38,4 @@ Feel free to ask us any questions related to ccore!
 
 ###Contributing###
 
-We are very open to all kind of contributions! Just send us an e-mail if you are considering being part of the ccore team, if you want see something wrong, just create a issue. We also welcome fixes in the form of pull-requests.
+We are very open to all kind of contributions! Just send us an e-mail if you are considering being part of the ccore team, if you see something wrong, just create a issue. We also welcome fixes in the form of pull-requests.

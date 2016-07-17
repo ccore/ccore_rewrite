@@ -5,7 +5,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <Windows.h>
+#include <windows.h>
+#include <sys/stat.h>
 
 #ifndef CC_DATA_LOCATION
 static char *_data_dir = NULL;

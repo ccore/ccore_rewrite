@@ -15,7 +15,7 @@
 #include <X11/keysym.h>
 #define KEYDEF(x11,win) x11
 #elif defined CC_OS_WIN32
-#include <Windows.h>
+#include <windows.h>
 #define KEYDEF(x11,win) win
 #endif
 

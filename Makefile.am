@@ -18,6 +18,11 @@ CCORE_SHARED += src/x11/cc_x11_display.c
 CCORE_SHARED += src/x11/cc_x11_opengl.c
 CCORE_SHARED += src/x11/cc_x11_window.c
 endif
+if BUILD_WIN32
+CCORE_SHARED += src/win32/cc_win32_file.c
+CCORE_SHARED += src/win32/cc_win32_gamepad.c
+CCORE_SHARED += src/win32/cc_win32_window.c
+endif
 
 pkginclude_HEADERS = include/*.h
 
@@ -32,7 +37,7 @@ libccore_la_LDFLAGS = $(EXTRA_LDFLAGS) -version-info $(CCORE_VERSION)
 libccore_la_LIBADD = $(EXTRA_LIBS)
 libccore_la_SOURCES = $(CCORE_SHARED)
 
-bin_PROGRAMS = bin/display bin/event bin/gamepad bin/info bin/mouse bin/opengl bin/thread bin/window_icon bin/window_simple
+bin_PROGRAMS = bin/window_simple bin/display bin/event bin/gamepad bin/info bin/mouse bin/opengl bin/thread bin/window_icon
 
 bin_display_SOURCES = examples/display.c
 bin_display_LDADD = libcommon.la

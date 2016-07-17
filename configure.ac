@@ -32,6 +32,7 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+AC_CANONICAL_HOST
 
 # Checks for the test library
 PKG_CHECK_MODULES([CHECK], [check >= 0.8.2], [have_check=yes], [have_check=no])
@@ -56,17 +57,6 @@ build_opengl=no
 SUMMARY="Configuration summary\n"
 SUMMARY="${SUMMARY}ccore version: ${CCORE_VERSION}\n"
 
-AC_CANONICAL_HOST
-case "${host_os}" in
-	cygwin*)
-		BASE_CFLAGS="-I/usr/include/mingw -mno-cygwin"
-		BASE_LDFLAGS="-mno-cygwin"
-		;;
-	*)
-    BASE_CFLAGS="-D_GNU_SOURCE=1"
-		;;
-esac
-
 EXTRA_LDFLAGS="$BASE_LDFLAGS"
 EXTRA_LIBS="$BASE_LIBS"
 EXTRA_CFLAGS="$BASE_CFLAGS"
@@ -89,7 +79,6 @@ CheckX11()
 
 CheckOpenGL()
 {
-	AC_CHECK_LIB([m], [cos], [], [echo "Math library is required" && exit -1])
 	AC_CHECK_LIB([GL], [glXChooseVisual], [], [echo "OpenGL dev library is required" && exit -1])
 
 	build_opengl=yes
@@ -140,6 +129,7 @@ case "${host_os}" in
 	linux*)
 		# Check Linux headers & libraries
 		AC_CHECK_HEADERS([sys/ioctl.h sys/param.h sys/types.h unistd.h])
+		AC_CHECK_LIB([m], [cos], [], [echo "Math library is required" && exit -1])
 		AC_CHECK_LIB([pthread], [pthread_create], [], [echo "Pthread dev library is required" && exit -1])
 
 		CheckX11
@@ -147,6 +137,31 @@ case "${host_os}" in
 		CheckEpoxy
 
 		build_linux=yes
+		;;
+	*mingw32* | *cygwin* | *wince* |mingwce*)
+    AC_CHECK_TOOL(WINDRES, windres, :)
+    AC_CHECK_TOOL(OBJCOPY, objcopy, :) 
+		
+		case "${host_os}" in
+      *mingw32*)
+        host_sys=mingw32
+        ;;
+      *cygwin*)
+        # Check if we are using the mno-cygwin mode in which case we are actually dealing with a mingw32 compiler
+        AC_EGREP_CPP(yes,
+            [#ifdef _WIN32
+             yes
+             #endif],
+            host_sys=mingw32, AC_MSG_ERROR([ccore requires -mno-cygwin]))
+        ;;
+    esac
+
+    if test x$host_sys = xmingw32; then
+    	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -Wl,--nxcompat -Wl,--no-seh -Wl,--dynamicbase"
+			EXTRA_LIBS="${EXTRA_LIBS} -lopengl32"
+		fi
+
+		build_windows=yes
 		;;
 	*)
 		AC_MSG_ERROR(["OS $host_os is not supported"])
@@ -156,6 +171,7 @@ esac
 # Pass the building booleans to Makefile.am
 AM_CONDITIONAL([BUILD_LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([BUILD_X11], [test "$build_x11" = "yes"])
+AM_CONDITIONAL([BUILD_WIN32], [test "$build_windows" = "yes"])
 AM_CONDITIONAL([BUILD_OPENGL], [test "$build_opengl" = "yes"])
 
 AM_CONDITIONAL([BUILD_TESTS], [test "$have_check" = "yes"])

@@ -8,7 +8,6 @@ Build-Depends:
  libglu1-mesa-dev,
  libx11-dev,
  libxext-dev,
- libxi-dev,
  libxrandr-dev
 Standards-Version: 3.9.6
 Section: libs
@@ -38,7 +37,6 @@ Depends:
  libglu1-mesa-dev,
  libx11-dev,
  libxext-dev,
- libxi-dev,
  libxrandr-dev,
  libccore1 (= ${binary:Version}), 
  ${misc:Depends}

@@ -8,8 +8,19 @@
 #include <unistd.h>
 #include <libgen.h>
 #include <limits.h>
+#include <dirent.h>
 #include <linux/limits.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+
+struct cc_dir {
+	DIR *dir;
+};
+struct cc_dir_entry {
+	char *name;
+
+	struct dirent *entry;
+};
 
 #ifndef CC_DATA_LOCATION
 static char *_data_dir = NULL;
@@ -85,6 +96,38 @@ int cc_get_file_last_accessed(const char *file, time_t *time_stamp)
 	}
 
 	*time_stamp = file_info.st_atime;
+
+	return 1;
+}
+
+int cc_open_dir(const char *path, struct cc_dir *dir)
+{
+	dir->dir = opendir(path);
+
+	return 1;
+}
+
+int cc_close_dir(struct cc_dir *dir)
+{
+	return closedir(dir->dir);
+}
+
+int cc_read_dir(struct cc_dir *dir, struct cc_dir_entry *dir_entry)
+{
+	dir_entry->entry = readdir(dir->dir);
+	if(dir_entry->entry == NULL){
+		cc_set_error("Could not read directory");
+		return 0;
+	}
+
+	dir_entry->name = dir_entry->entry->d_name;
+
+	return 1;
+}
+
+int cc_rewind_dir(struct cc_dir *dir)
+{
+	rewinddir(dir->dir);
 
 	return 1;
 }

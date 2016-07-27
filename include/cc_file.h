@@ -11,6 +11,9 @@
 
 #include <time.h>
 
+struct cc_dir;
+struct cc_dir_entry;
+
 const char *cc_get_dir_user(void);
 const char *cc_get_dir_data(void);
 const char *cc_get_dir_temp(void);
@@ -18,5 +21,10 @@ const char *cc_get_dir_temp(void);
 int cc_get_file_size(const char *file, unsigned long *file_size);
 int cc_get_file_last_modified(const char *file, time_t *time_stamp);
 int cc_get_file_last_accessed(const char *file, time_t *time_stamp);
+
+int cc_open_dir(const char *path, struct cc_dir *dir);
+int cc_close_dir(struct cc_dir *dir);
+int cc_read_dir(struct cc_dir *dir, struct cc_dir_entry *dir_entry);
+int cc_rewind_dir(struct cc_dir *dir);
 
 #endif /* __CC_FILE_H__ */

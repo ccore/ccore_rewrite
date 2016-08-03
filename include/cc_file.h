@@ -24,7 +24,10 @@ int cc_get_file_last_accessed(const char *file, time_t *time_stamp);
 
 int cc_open_dir(const char *path, struct cc_dir *dir);
 int cc_close_dir(struct cc_dir *dir);
-int cc_read_dir(struct cc_dir *dir, struct cc_dir_entry *dir_entry);
 int cc_rewind_dir(struct cc_dir *dir);
+int cc_seek_dir(struct cc_dir *dir, long distance);
+int cc_tell_dir(const struct cc_dir *dir, long *position);
+int cc_read_dir(struct cc_dir *dir, struct cc_dir_entry *dir_entry);
+int cc_get_dir_name(const struct cc_dir *dir, char *name); /* Maximum length of the name is 256 characters */
 
 #endif /* __CC_FILE_H__ */

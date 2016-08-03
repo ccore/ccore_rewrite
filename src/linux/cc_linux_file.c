@@ -17,8 +17,6 @@ struct cc_dir {
 	DIR *dir;
 };
 struct cc_dir_entry {
-	char *name;
-
 	struct dirent *entry;
 };
 
@@ -128,6 +126,13 @@ int cc_read_dir(struct cc_dir *dir, struct cc_dir_entry *dir_entry)
 int cc_rewind_dir(struct cc_dir *dir)
 {
 	rewinddir(dir->dir);
+
+	return 1;
+}
+
+int cc_get_dir_name(const struct cc_dir_entry *entry, char *name)
+{
+	name = entry->d_name;
 
 	return 1;
 }

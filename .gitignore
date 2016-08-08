@@ -1,3 +1,17 @@
+# Debian files
+*.substvars
+debian/.debhelper
+debian/debhelper-build-stamp
+debian/files
+debian/lib*/
+debian/tmp/
+
+# Autotools files
+configure
+aclocal.m4
+Makefile.in
+build-scripts/
+
 # Library files
 *.la
 
